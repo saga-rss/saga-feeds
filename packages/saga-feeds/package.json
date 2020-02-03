@@ -1,0 +1,39 @@
+{
+  "name": "saga-feeds",
+  "version": "0.0.1",
+  "description": "The Saga RSS server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "develop": "NODE_ENV=development nodemon index.js | bunyan"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.7.2",
+    "bunyan": "^1.8.12",
+    "date-fns": "^2.9.0",
+    "dotenv": "^8.2.0",
+    "entities": "^2.0.0",
+    "feedparser": "^2.2.9",
+    "got": "^10.4.0",
+    "mongoose": "^5.8.11",
+    "mongoose-autopopulate": "^0.11.0",
+    "mongoose-string-query": "^0.2.7",
+    "normalize-url": "^5.0.0",
+    "pg": "^7.18.1",
+    "restify": "^8.5.1",
+    "rss-finder": "^2.1.3",
+    "uuid": "^3.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.2"
+  },
+  "nodemonConfig": {
+    "verbose": true,
+    "ignore": [
+      "migrations/*",
+      "node_modules/*"
+    ]
+  }
+}
