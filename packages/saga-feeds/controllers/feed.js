@@ -1,16 +1,12 @@
 const normalizeUrl = require('normalize-url')
-const Promise = require('bluebird')
-const entities = require('entities')
-const { format, subSeconds, isAfter } = require('date-fns')
 
 const { wrapAsync } = require('./utils')
-const { processFeed } = require('../parsers/rss')
 const { discoverFeeds } = require('../parsers/discovery')
-const RSS = require('../models/rss')
+const Feed = require('../models/feed')
 
 const listFeeds = wrapAsync(async (req, res, next) => {
   const query = req.query || {}
-  const feeds = await RSS.apiQuery(query)
+  const feeds = await Feed.apiQuery(query)
 
   res.send(feeds)
 
@@ -33,59 +29,9 @@ const createFeed = wrapAsync(async (req, res, next) => {
       .json({ message: 'no feed urls were found' })
   }
 
-  const newFeeds = []
-  const feeds = await Promise.map(discovered.feedUrls, async f => {
+  const results = await Feed.createOrUpdateFeed(discovered)
 
-    // get the title and url from the discovered results
-    const feedTitle = f.title || discovered.site.title
-    const feedUrl = normalizeUrl(f.url)
-
-    // attempt to find a matching feed in the db
-    let rss = await RSS.findOne({ feedUrl })
-
-
-    if (!rss
-      || (
-        isAfter(
-          subSeconds(new Date(), 30),
-          new Date(rss.lastScrapedDate),
-        )
-      )
-    ) {
-      console.log('CONTINUE')
-      const response = await RSS.findOneAndUpdate(
-        { feedUrl },
-        {
-          categories: 'RSS',
-          description: entities.decodeHTML(feedTitle),
-          feedUrl: feedUrl,
-          images: {
-            favicon: discovered.site.favicon,
-          },
-          lastScraped: new Date().toISOString(),
-          title: entities.decodeHTML(feedTitle),
-          url: discovered.site.url,
-          valid: true,
-        },
-        {
-          new: true,
-          rawResult: true,
-          upsert: true,
-        },
-      )
-
-      rss = response.value
-      if (response.lastErrorObject.upserted) {
-        newFeeds.push(rss)
-      }
-    }
-
-    return f
-  })
-
-  // const processed = await processFeed(req.body.feedUrl)
-
-  res.send(feeds)
+  res.send(results.feeds)
 
   return next()
 })

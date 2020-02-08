@@ -8,16 +8,16 @@ const schema = new Schema({
     trim: true,
     required: true,
   },
-  rss: [
+  feed: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'RSS',
+      ref: 'Feed',
       required: true,
       autopopulate: true,
     },
   ],
 }, {
-  collection: 'folders',
+  collection: 'folder',
   timestamp: true,
 })
 

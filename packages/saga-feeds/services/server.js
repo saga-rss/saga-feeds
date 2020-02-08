@@ -3,6 +3,7 @@ const restify = require('restify')
 const logger = require('../middlewares/logger')
 const requestLogger = require('../middlewares/requestLogger')
 const feedRoutes = require('../controllers/feed')
+const postRoutes = require('../controllers/post')
 
 const server = restify.createServer()
 const log = logger.getLogger()
@@ -17,8 +18,10 @@ server.on('after', restify.plugins.auditLogger({
 }))
 
 
-server.get({ name: 'feeds', path: '/feeds' }, feedRoutes.listFeeds)
-server.post({ name: 'feeds', path: '/feeds' }, feedRoutes.createFeed)
+server.get({ name: 'listFeeds', path: '/feeds' }, feedRoutes.listFeeds)
+server.post({ name: 'createFeed', path: '/feeds' }, feedRoutes.createFeed)
+
+server.get({ name: 'getPost', path: '/posts/:postId' }, postRoutes.getPost)
 
 module.exports.start = () => {
   server.listen(8081, function () {

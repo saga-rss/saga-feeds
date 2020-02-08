@@ -7,4 +7,8 @@ module.exports = {
   mongo: {
     uri: process.env.SAGA_MONGO_URI,
   },
+  redis: {
+    host: process.env.SAGA_REDIS_HOST,
+    port: process.env.SAGA_REDIS_PORT,
+  },
 }
