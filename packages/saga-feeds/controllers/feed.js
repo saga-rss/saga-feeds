@@ -1,4 +1,5 @@
 const normalizeUrl = require('normalize-url')
+const mongoose = require('mongoose')
 
 const { wrapAsync } = require('./utils')
 const { discoverFeeds } = require('../parsers/discovery')
@@ -36,7 +37,25 @@ const createFeed = wrapAsync(async (req, res, next) => {
   return next()
 })
 
+const getFeed = wrapAsync(async (req, res, next) => {
+  const feedId = req.params.feedId
+  const feed = await Feed.aggregate([
+    { $match: { _id: { $in: [mongoose.Types.ObjectId(feedId)] } } },
+    { $lookup: { from: 'post', localField: '_id', foreignField: 'feed', as: 'posts' } },
+  ])
+
+  if (!feed || !feed.length) {
+    res.status(404)
+    return res.json({ error: 'Feed does not exist.' })
+  }
+
+  res.send(feed[0])
+
+  return next()
+})
+
 module.exports = {
   listFeeds,
   createFeed,
+  getFeed,
 }

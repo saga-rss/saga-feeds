@@ -20,6 +20,7 @@ server.on('after', restify.plugins.auditLogger({
 
 server.get({ name: 'listFeeds', path: '/feeds' }, feedRoutes.listFeeds)
 server.post({ name: 'createFeed', path: '/feeds' }, feedRoutes.createFeed)
+server.get({ name: 'getFeed', path: '/feeds/:feedId'}, feedRoutes.getFeed)
 
 server.get({ name: 'getPost', path: '/posts/:postId' }, postRoutes.getPost)
 

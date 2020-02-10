@@ -41,7 +41,7 @@ module.exports = async (job, done) => {
           { identifier: post.identifier },
           {
             ...post,
-            feed: updatedFeed,
+            feed: data.rssId,
           },
           { new: true, upsert: true },
         )

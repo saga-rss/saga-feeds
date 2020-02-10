@@ -42,22 +42,8 @@ const schema = new Schema({
   feed: {
     type: Schema.Types.ObjectId,
     ref: 'Feed',
+    autopopulate: true,
     required: true,
-    autopopulate: {
-      select: [
-        'title',
-        'url',
-        'feedUrl',
-        'favicon',
-        'categories',
-        'description',
-        'isVisible',
-        'publishedDate',
-        'lastScrapedDate',
-        'images',
-        'isFeatured',
-      ],
-    },
     index: true,
   },
   postType: {
