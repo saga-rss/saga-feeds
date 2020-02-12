@@ -31,7 +31,10 @@ const determineFeedType = posts => {
   let feedType = 'article'
   posts.map(post => {
     if (post.enclosures) {
-      post.enclosures.map(enclosure => {
+      post.enclosures.forEach(enclosure => {
+        if (!enclosure.type) {
+          return false
+        }
         if (enclosure.type.indexOf('audio') >= 0) {
           feedType = 'audio'
         } else if (enclosure.type.indexOf('video') >= 0) {
@@ -62,7 +65,6 @@ const readFeedStream = (stream, feedUrl) => {
         const streamFeed = this
         feed.meta = {
           url: this.meta.link,
-          feedUrl: this.meta.xmlurl ? this.meta.xmlurl : feedUrl,
           language: this.meta.language,
           image: {
             featured: this.meta.image && this.meta.image.url ? this.meta.image.url : '',
@@ -102,24 +104,19 @@ const postProcessing = async (posts) => {
       postType,
       content: sanitizeHtml(post.summary),
       description: strip(entities.decodeHTML(post.description)),
-      enclosures: post.enclosures,
+      enclosures: processEnclosures(post.enclosures),
       guid: post.guid,
       link: post.link,
       publishedDate: post.pubdate || post.pubDate,
       title: post.title,
-      url: normalize(post.link),
+      url: post.link ? normalize(post.link) : '',
       commentUrl: post.comments,
       images: {
         featured: post.image.url || '',
       },
       identifier: createPostIdentifier(post.guid, post.pubDate),
-      media: {
-        image: [],
-        video: [],
-        document: [],
-        audio: [],
-        executable: [],
-      },
+      interests: [],
+      author: '',
     }
 
     if (post.categories) {
@@ -128,16 +125,43 @@ const postProcessing = async (posts) => {
 
     if (post['media:content']) {
       const content = post['media:content']
-      processed.media = processMedia(content, processed.media)
+      processed.enclosures = processMedia(content, processed.enclosures)
+
+      if (content['media:credit']) {
+        if (Array.isArray(content['media:credit'])) {
+          content['media:credit'].map(credit => processed.interests.push(credit['#']))
+        } else {
+          processed.interests.push(content['media:credit']['#'])
+        }
+      }
     }
 
     if (post['media:group']) {
-      if (post['media:group']['media:content']) {
+      if (Array.isArray(post['media:group']['media:content'])) {
         post['media:group']['media:content'].map(content => {
-          processed.media = processMedia(content, processed.media)
+          processed.enclosures = processMedia(content, processed.enclosures)
         })
       }
     }
+
+    if (post['yt:videoid']) {
+      const youtubeId = post['yt:videoid']['#']
+
+      processed.enclosures.push({
+        type: 'youtube',
+        url: `https://www.youtube.com/watch?v=${youtubeId}`,
+      })
+
+      if (post['media:group'] && !processed.description) {
+        processed.description = post['media:group']['media:description']['#']
+      }
+    }
+
+    if (post['atom:author']) {
+      processed.author = post['atom:author']['name'] ? post['atom:author']['name']['#'] : ''
+    }
+
+    processed.enclosures = filterEnclosures(processed.enclosures)
 
     return processed
   })
@@ -161,62 +185,64 @@ const processMedia = (content, media) => {
   const contentTitle = content['media:title'] ? content['media:title']['#'] : ''
   const contentDescription = content['media:description'] ? content['media:description']['#'] : ''
 
-  switch (type) {
-    case 'image':
-      media.image.push({
-        url: mainContent.url,
-        type: mainContent.type || '',
-        fileSize: mainContent.filesize || '',
-        width: mainContent.width || '',
-        height: mainContent.height || '',
-        title: contentTitle,
-        description: contentDescription,
-      })
-      break
-    case 'video':
-      media.video.push({
-        url: mainContent.url,
-        type: mainContent.type || '',
-        fileSize: mainContent.filesize || '',
-        width: mainContent.width || '',
-        height: mainContent.height || '',
-        title: contentTitle,
-        description: contentDescription,
-      })
-      break
-    case 'document':
-      media.document.push({
-        url: mainContent.url,
-        type: mainContent.type || '',
-        fileSize: mainContent.filesize || '',
-        title: contentTitle,
-        description: contentDescription,
-      })
-      break
-    case 'audio':
-      media.audio.push({
-        url: mainContent.url,
-        type: mainContent.type || '',
-        fileSize: mainContent.filesize || '',
-        title: contentTitle,
-        description: contentDescription,
-      })
-      break
-    case 'executable':
-      media.executable.push({
-        url: mainContent.url,
-        type: mainContent.type || '',
-        fileSize: mainContent.filesize || '',
-        title: contentTitle,
-        description: contentDescription,
-      })
-      break
-    default:
-      logger.info(`media content found but was not processed`, mainContent)
-      break
-  }
+  media.push({
+    url: mainContent.url,
+    type: mainContent.type || '',
+    length: mainContent.filesize || '',
+    width: mainContent.width || '',
+    height: mainContent.height || '',
+    title: contentTitle,
+    description: contentDescription,
+    medium: type,
+  })
 
   return media
+}
+
+const processEnclosures = enclosures => {
+  if (
+    !enclosures ||
+    !Array.isArray(enclosures) ||
+    !enclosures.length ||
+    !enclosures[0].type
+  ) {
+    return []
+  }
+
+  return enclosures.map(enclosure => {
+    let medium = ''
+    if (enclosure.type.indexOf('audio') >= 0) {
+      medium = 'audio'
+    } else if (enclosure.type.indexOf('video') >= 0) {
+      medium = 'video'
+    } else if (enclosure.type.indexOf('image') >= 0) {
+      medium = 'image'
+    }
+    return {
+      ...enclosure,
+      medium,
+    }
+  })
+}
+
+const filterEnclosures = enclosures => {
+  if (!enclosures || !Array.isArray(enclosures) || !enclosures.length) {
+    return enclosures
+  }
+
+  const filtered = []
+  const urls = []
+
+  enclosures.forEach(enclosure => {
+    if (urls.indexOf(enclosure.url) >= 0) {
+      return false
+    } else {
+      filtered.push(enclosure)
+      urls.push(enclosure.url)
+    }
+  })
+
+  return filtered
 }
 
 module.exports = {

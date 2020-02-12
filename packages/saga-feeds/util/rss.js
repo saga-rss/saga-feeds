@@ -1,20 +1,20 @@
 const { subSeconds, isAfter } = require('date-fns')
 
-const shouldFeedPostsUpdate = (lastScrapedDate, feedHeaders) => {
+const shouldFeedPostsUpdate = (feedStaleDate, feedHeaders) => {
   const thirtySecondsAgo = subSeconds(new Date(), 30)
 
-  const lastScrapedDateCondition = isAfter(
-    new Date(lastScrapedDate),
+  const feedStale = isAfter(
+    new Date(feedStaleDate),
     thirtySecondsAgo,
   )
 
   const lastModifiedDate = feedHeaders['last-modified'] || new Date()
-  const conditionFeedExpiration = isAfter(
+  const feedModified = isAfter(
     new Date(lastModifiedDate),
     thirtySecondsAgo,
   )
 
-  return lastScrapedDateCondition && conditionFeedExpiration
+  return feedStale || feedModified
 }
 
 module.exports = {

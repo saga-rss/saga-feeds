@@ -1,14 +1,30 @@
 const rssFinder = require('rss-finder')
+const got = require('got')
 
-const logger = require('../middlewares/logger')
+const logger = require('../middlewares/logger').getLogger()
+
+const validContentTypes = [
+  'application/rss+xml',
+  'application/atom+xml',
+  'application/rdf+xml',
+  'application/rss',
+  'application/atom',
+]
 
 const discoverFeeds = async url => {
-  const log = logger.getLogger('discovery')
-  const results = await rssFinder(url)
+  const discoveryResults = await rssFinder(url)
+  const feedResults = await got.get(url)
 
-  log.debug(results)
+  const contentType = feedResults.headers['content-type']
+  if (contentType && validContentTypes.indexOf(contentType) >= 0) {
+    discoveryResults.feedUrls = [{
+      url,
+    }]
+  }
 
-  return results
+  logger.debug(discoveryResults)
+
+  return discoveryResults
 }
 
 module.exports = {

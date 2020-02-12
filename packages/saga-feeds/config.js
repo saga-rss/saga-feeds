@@ -11,4 +11,5 @@ module.exports = {
     host: process.env.SAGA_REDIS_HOST,
     port: process.env.SAGA_REDIS_PORT,
   },
+  feedRefreshInterval: 300000,
 }

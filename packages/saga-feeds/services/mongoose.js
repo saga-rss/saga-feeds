@@ -2,26 +2,39 @@ const config = require('../config')
 const mongoose = require('mongoose')
 mongoose.Promise = require('bluebird')
 
+const logger= require('../middlewares/logger').getLogger()
+
 mongoose.connection.on('connected', () => {
-  console.log('MongoDB is connected')
+  logger.info('MongoDB is connected')
 })
 
 mongoose.connection.on('error', (err) => {
-  console.log(`Could not connect to MongoDB because of ${err}`)
+  logger.error(`Could not connect to MongoDB because of ${err}`)
   process.exit(-1)
 })
 
 if (config.env === 'development') {
-  mongoose.set('debug', true)
+  // mongoose.set('debug', true)
 }
 
-module.exports.connect = () => {
+const start = (cb) => {
+  logger.info('starting mongodb connection')
+
   const uri = config.mongo.uri
 
-  mongoose.connect(uri, {
+  return mongoose.connect(uri, {
     keepAlive: 1,
-    useNewUrlParser: true
-  })
+    useNewUrlParser: true,
+    useFindAndModify: false,
+  }, cb)
+}
 
-  return mongoose.connection
+const stop = (cb) => {
+  logger.info('shutting down mongodb connection')
+  return mongoose.disconnect(cb)
+}
+
+module.exports = {
+  start,
+  stop,
 }

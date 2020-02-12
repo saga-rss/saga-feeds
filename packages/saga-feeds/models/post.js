@@ -7,34 +7,42 @@ const MediaSchema = new Schema({
   url: {
     type: String,
     trim: true,
+    required: true,
   },
   type: {
     type: String,
     trim: true,
-  },
-  fileSize: {
-    type: String,
-    trim: true,
+    default: '',
   },
   length: {
     type: String,
     trim: true,
+    default: '',
   },
   width: {
     type: String,
     trim: true,
+    default: '',
   },
   height: {
     type: String,
     trim: true,
+    default: '',
   },
   title: {
     type: String,
     trim: true,
+    default: '',
   },
   description: {
     type: String,
     trim: true,
+    default: '',
+  },
+  medium: {
+    type: String,
+    trim: true,
+    default: '',
   },
 })
 
@@ -116,18 +124,16 @@ const schema = new Schema({
     type: Number,
     default: 0,
   },
-  media: {
-    image: [MediaSchema],
-    audio: [MediaSchema],
-    video: [MediaSchema],
-    document: [MediaSchema],
-    executable: [MediaSchema],
-  },
   interests: {
     type: [String],
     index: true,
   },
   identifier: {
+    type: String,
+    trim: true,
+    index: true,
+  },
+  author: {
     type: String,
     trim: true,
     index: true,
@@ -140,7 +146,7 @@ const schema = new Schema({
 schema.methods.detailView = function detailView() {
   const transformed = {}
   const fields = ['postType', 'title', 'url', 'feedUrl', 'likeCount', 'description', 'images',
-    'content', 'enclosures', 'publishedDate', 'commentUrl', 'media', 'tags', 'identifier', 'interests']
+    'content', 'enclosures', 'publishedDate', 'commentUrl', 'tags', 'identifier', 'interests', 'author']
   fields.forEach((field) => {
     transformed[field] = this[field]
   })

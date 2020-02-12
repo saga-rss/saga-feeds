@@ -28,7 +28,10 @@ module.exports = async (job, done) => {
 
     const updatedFeed = await Feed.findOneAndUpdate(
       { _id: data.rssId },
-      meta,
+      {
+        ...meta,
+        scrapeFailureCount: 0, // reset failure count to 0
+      },
       {
         new: true,
       },
@@ -47,8 +50,6 @@ module.exports = async (job, done) => {
         )
       })
     }
-
-    console.log(updatedPosts)
 
     return done(null, {
       feed: updatedFeed,

@@ -89,7 +89,7 @@ const schema = new Schema({
     default: Date.now,
     index: true,
   },
-  likes: {
+  likesCount: {
     type: Number,
     default: 0,
   },
@@ -128,8 +128,10 @@ const schema = new Schema({
 })
 
 schema.methods.detailView = function detailView() {
-  const transformed = {}
-  const fields = ['feedType', 'title', 'url', 'feedUrl', 'followerCount', 'likes', 'summary', 'language', 'images',
+  const transformed = {
+    id: this._id,
+  }
+  const fields = ['feedType', 'title', 'url', 'feedUrl', 'followerCount', 'likesCount', 'summary', 'language', 'images',
     'isFeatured',
     'description', 'publishedDate', 'isVisible', 'createdAt', 'updatedAt', 'updatedDate', 'feedStaleDate',
     'scrapeFailureCount', 'interests']
@@ -137,6 +139,13 @@ schema.methods.detailView = function detailView() {
     transformed[field] = this[field]
   })
   return transformed
+}
+
+schema.statics.addScrapeFailure = async function(id) {
+  await this.findOneAndUpdate(
+    { _id: id },
+    { $inc: { scrapeFailureCount: 1 } },
+  ).exec();
 }
 
 schema.statics.createOrUpdateFeed = async function createOrUpdateFeed(discovery) {
