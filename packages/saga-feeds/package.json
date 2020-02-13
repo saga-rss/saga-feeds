@@ -4,6 +4,7 @@
   "description": "The Saga RSS server",
   "main": "index.js",
   "scripts": {
+    "prettier": "prettier --write \"*.{js,json}\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "develop": "NODE_ENV=development nodemon index.js | bunyan"
   },
@@ -28,11 +29,15 @@
     "restify": "^8.5.1",
     "rss-finder": "^2.1.3",
     "sanitize-html": "^1.21.1",
+    "scrappy": "^0.4.0",
     "strip": "^3.0.0",
     "uuid": "^3.4.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.2"
+    "husky": "^4.2.3",
+    "lint-staged": "^10.0.7",
+    "nodemon": "^2.0.2",
+    "prettier": "^1.19.1"
   },
   "nodemonConfig": {
     "verbose": true,
@@ -40,5 +45,15 @@
       "migrations/*",
       "node_modules/*"
     ]
+  },
+  "lint-staged": {
+    "*.{js,json}": [
+      "npm run prettier --"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   }
 }
