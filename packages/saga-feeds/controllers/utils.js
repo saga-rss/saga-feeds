@@ -1,8 +1,7 @@
-const wrapAsync = (routeHandler) => {
+const wrapAsync = routeHandler => {
   return function(req, res, next) {
-    return routeHandler(req, res, next)
-      .catch(error => next(error))
+    return routeHandler(req, res, next).catch(error => next(error))
   }
 }
 
-module.exports = {wrapAsync}
+module.exports = { wrapAsync }

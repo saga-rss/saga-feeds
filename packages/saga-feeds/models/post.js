@@ -46,108 +46,126 @@ const MediaSchema = new Schema({
   },
 })
 
-const schema = new Schema({
-  feed: {
-    type: Schema.Types.ObjectId,
-    ref: 'Feed',
-    autopopulate: true,
-    required: true,
-    index: true,
-  },
-  postType: {
-    type: String,
-    enum: ['article', 'audio', 'video'],
-    default: 'article',
-  },
-  url: {
-    type: String,
-    trim: true,
-    required: true,
-    index: { type: 'hashed' },
-  },
-  canonicalUrl: {
-    type: String,
-    trim: true,
-  },
-  guid: {
-    type: String,
-    trim: true,
-  },
-  link: {
-    type: String,
-    trim: true,
-  },
-  title: {
-    type: String,
-    trim: true,
-    required: true,
-  },
-  description: {
-    type: String,
-    trim: true,
-    maxLength: 240,
-    default: '',
-  },
-  content: {
-    type: String,
-    trim: true,
-    default: '',
-  },
-  commentUrl: {
-    type: String,
-    trim: true,
-    default: '',
-  },
-  images: {
-    featured: {
+const schema = new Schema(
+  {
+    feed: {
+      type: Schema.Types.ObjectId,
+      ref: 'Feed',
+      autopopulate: true,
+      required: true,
+      index: true,
+    },
+    postType: {
+      type: String,
+      enum: ['article', 'audio', 'video'],
+      default: 'article',
+    },
+    url: {
+      type: String,
+      trim: true,
+      required: true,
+      index: { type: 'hashed' },
+    },
+    canonicalUrl: {
+      type: String,
+      trim: true,
+    },
+    guid: {
+      type: String,
+      trim: true,
+    },
+    link: {
+      type: String,
+      trim: true,
+    },
+    title: {
+      type: String,
+      trim: true,
+      required: true,
+    },
+    description: {
+      type: String,
+      trim: true,
+      maxLength: 240,
+      default: '',
+    },
+    content: {
       type: String,
       trim: true,
       default: '',
     },
-    favicon: {
+    commentUrl: {
       type: String,
       trim: true,
       default: '',
     },
-    openGraph: {
+    images: {
+      featured: {
+        type: String,
+        trim: true,
+        default: '',
+      },
+      favicon: {
+        type: String,
+        trim: true,
+        default: '',
+      },
+      openGraph: {
+        type: String,
+        trim: true,
+        default: '',
+      },
+    },
+    publishedDate: {
+      type: Date,
+      default: Date.now,
+    },
+    enclosures: [MediaSchema],
+    likeCount: {
+      type: Number,
+      default: 0,
+    },
+    interests: {
+      type: [String],
+      index: true,
+    },
+    identifier: {
       type: String,
       trim: true,
-      default: '',
+      index: true,
+    },
+    author: {
+      type: String,
+      trim: true,
+      index: true,
     },
   },
-  publishedDate: {
-    type: Date,
-    default: Date.now,
+  {
+    collection: 'post',
+    timestamp: true,
   },
-  enclosures: [MediaSchema],
-  likeCount: {
-    type: Number,
-    default: 0,
-  },
-  interests: {
-    type: [String],
-    index: true,
-  },
-  identifier: {
-    type: String,
-    trim: true,
-    index: true,
-  },
-  author: {
-    type: String,
-    trim: true,
-    index: true,
-  },
-}, {
-  collection: 'post',
-  timestamp: true,
-})
+)
 
 schema.methods.detailView = function detailView() {
   const transformed = {}
-  const fields = ['postType', 'title', 'url', 'feedUrl', 'likeCount', 'description', 'images',
-    'content', 'enclosures', 'publishedDate', 'commentUrl', 'tags', 'identifier', 'interests', 'author']
-  fields.forEach((field) => {
+  const fields = [
+    'postType',
+    'title',
+    'url',
+    'feedUrl',
+    'likeCount',
+    'description',
+    'images',
+    'content',
+    'enclosures',
+    'publishedDate',
+    'commentUrl',
+    'tags',
+    'identifier',
+    'interests',
+    'author',
+  ]
+  fields.forEach(field => {
     transformed[field] = this[field]
   })
   return transformed

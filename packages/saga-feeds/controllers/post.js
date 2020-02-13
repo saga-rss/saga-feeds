@@ -7,7 +7,7 @@ const getPost = wrapAsync(async (req, res, next) => {
 
   if (!post) {
     res.status(404)
-      return res.json({ error: 'Post does not exist.' })
+    return res.json({ error: 'Post does not exist.' })
   }
 
   res.send(post)
