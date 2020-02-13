@@ -18,7 +18,7 @@ const {
   FeedStartQueueProcess,
   FeedStartQueueStop
 } = require("../workers/queues");
-const logger = require("../middlewares/logger").getLogger();
+const logger = require("../helpers/logger").getLogger();
 
 function FeedUpdaterDaemon(forcedUpdate = false) {
   // controls ability to pause processing

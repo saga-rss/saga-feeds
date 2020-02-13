@@ -2,7 +2,7 @@ const normalizeUrl = require("normalize-url");
 const mongoose = require("mongoose");
 
 const { wrapAsync } = require("./utils");
-const { discoverFeeds } = require("../parsers/discovery");
+const { discoverFeeds } = require("../helpers/discovery");
 const Feed = require("../models/feed");
 const { FeedStartQueueAdd } = require("../workers/queues");
 

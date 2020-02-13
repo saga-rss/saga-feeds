@@ -2,7 +2,7 @@ const config = require("../config");
 const mongoose = require("mongoose");
 mongoose.Promise = require("bluebird");
 
-const logger = require("../middlewares/logger").getLogger();
+const logger = require("../helpers/logger").getLogger();
 
 mongoose.connection.on("connected", () => {
   logger.info("MongoDB is connected");
