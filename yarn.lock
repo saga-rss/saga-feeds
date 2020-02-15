@@ -2107,6 +2107,11 @@ mongoose-autopopulate@^0.11.0:
   resolved "https://registry.yarnpkg.com/mongoose-autopopulate/-/mongoose-autopopulate-0.11.0.tgz#9b5e9c9a36f63a39f8b205d12693e1d8a9260225"
   integrity sha512-pbL6w8Yt3KF0yxHZqP498CHelygOSCvYo6SvO0Pz7UW3Mzu4/xIDdoazwnmodDeI81dlKNvpWTS8fVKSTM8sDg==
 
+mongoose-delete@^0.5.1:
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/mongoose-delete/-/mongoose-delete-0.5.1.tgz#2b038b01fe8a29b16e160e17235ce47310246de9"
+  integrity sha512-uCNVIzrX846LjbHYmaiVZ9lNhOhVhxkEsBUVswE6WvU+UBYj6G96rXra0jidQ+1eNo/zH2Rx4Ar4NTr2T7PpfQ==
+
 mongoose-legacy-pluralize@1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/mongoose-legacy-pluralize/-/mongoose-legacy-pluralize-1.0.2.tgz#3ba9f91fa507b5186d399fb40854bff18fb563e4"

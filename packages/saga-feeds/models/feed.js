@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const mongooseStringQuery = require('mongoose-string-query')
+const mongooseDelete = require('mongoose-delete')
 const normalizeUrl = require('normalize-url')
 const entities = require('entities')
 const { subSeconds, isAfter } = require('date-fns')
@@ -84,11 +85,6 @@ const schema = new Schema(
     updatedDate: {
       type: Date,
       default: Date.now,
-    },
-    isValid: {
-      type: Boolean,
-      default: true,
-      index: true,
     },
     lastScrapedDate: {
       type: Date,
@@ -180,15 +176,6 @@ schema.statics.addScrapeFailure = async function addScrapeFailure(id) {
   await this.findOneAndUpdate({ _id: id }, { $inc: { scrapeFailureCount: 1 } }).exec()
 }
 
-schema.statics.invalidateFeed = async function addScrapeFailure(id) {
-  await this.findOneAndUpdate(
-    { _id: id },
-    {
-      isValid: false,
-    },
-  ).exec()
-}
-
 schema.statics.createOrUpdateFeed = async function createOrUpdateFeed(discovery) {
   const self = this
 
@@ -242,5 +229,9 @@ schema.statics.createOrUpdateFeed = async function createOrUpdateFeed(discovery)
 }
 
 schema.plugin(mongooseStringQuery)
+schema.plugin(mongooseDelete, {
+  overrideMethods: true,
+  deletedAt: true,
+})
 
 module.exports = mongoose.model('Feed', schema)

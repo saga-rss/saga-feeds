@@ -32,7 +32,7 @@ const refreshFeeds = async (forceUpdate = false, jobType = JOB_TYPE_FEED) => {
 
         if (error.response && error.response.statusCode === 404) {
           // this feed doesn't exist
-          await Feed.invalidateFeed(doc._id)
+          await doc.delete()
         }
 
         return Promise.resolve()

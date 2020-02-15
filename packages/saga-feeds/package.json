@@ -34,6 +34,7 @@
     "metascraper-url": "^5.11.1",
     "mongoose": "^5.8.11",
     "mongoose-autopopulate": "^0.11.0",
+    "mongoose-delete": "^0.5.1",
     "mongoose-string-query": "^0.2.7",
     "normalize-url": "^5.0.0",
     "restify": "^8.5.1",
