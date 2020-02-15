@@ -3,24 +3,24 @@
 const STANDALONE = !module.parent
 
 if (STANDALONE) {
-  process.title = 'saga-feed-updater'
+  process.title = 'saga-meta-updater'
 }
 
 const program = require('commander')
 
 const config = require('../config')
 const appInfo = require('../package.json')
-const { refreshFeeds, JOB_TYPE_FEED } = require('../helpers/refreshFeeds')
 const mongoose = require('../services/mongoose')
 const {
-  FeedEndQueueProcess,
-  FeedEndQueueStop,
-  FeedStartQueueProcess,
-  FeedStartQueueStop,
+  MetaEndQueueProcess,
+  MetaEndQueueStop,
+  MetaStartQueueProcess,
+  MetaStartQueueStop,
 } = require('../workers/queues')
+const { refreshFeeds, JOB_TYPE_META } = require('../helpers/refreshFeeds')
 const logger = require('../helpers/logger').getLogger()
 
-function FeedUpdaterDaemon(forcedUpdate = false) {
+function MetaUpdaterDaemon(forcedUpdate = false) {
   // controls ability to pause processing
   this.isPaused = false
 
@@ -31,25 +31,27 @@ function FeedUpdaterDaemon(forcedUpdate = false) {
   this.forcedUpdate = forcedUpdate
 }
 
-FeedUpdaterDaemon.prototype.updateFeeds = function updateFeed() {
+MetaUpdaterDaemon.prototype.updateFeedsMeta = function updateFeed() {
   if (this.isPaused) {
     return false
   }
 
-  refreshFeeds(this.forcedUpdate, JOB_TYPE_FEED).then(() => {
-    this.goToSleep(this.updateFeeds)
+  refreshFeeds(this.forcedUpdate, JOB_TYPE_META).then(feeds => {
+    logger.info(`feeds to update`, feeds)
+
+    this.goToSleep(this.updateFeedsMeta)
   })
 }
 
-FeedUpdaterDaemon.prototype.goToSleep = function goToSleep(fn) {
+MetaUpdaterDaemon.prototype.goToSleep = function goToSleep(fn) {
   this.sleeping = setTimeout(() => {
     return fn.call(this)
-  }, config.feedRefreshInterval)
+  }, config.metaRefreshInterval)
 }
 
-FeedUpdaterDaemon.prototype.start = function start() {
-  FeedStartQueueProcess()
-  FeedEndQueueProcess()
+MetaUpdaterDaemon.prototype.start = function start() {
+  MetaStartQueueProcess()
+  MetaEndQueueProcess()
 
   if (STANDALONE) {
     mongoose.start(error => {
@@ -58,23 +60,23 @@ FeedUpdaterDaemon.prototype.start = function start() {
         process.exit(1)
       }
 
-      this.goToSleep(this.updateFeeds)
+      this.updateFeedsMeta()
     })
   } else {
-    this.updateFeeds()
+    this.updateFeedsMeta()
   }
 
-  logger.info('started feed updater daemon')
+  logger.info('started meta updater daemon')
 }
 
-FeedUpdaterDaemon.prototype.stop = function stop(code) {
+MetaUpdaterDaemon.prototype.stop = function stop(code) {
   if (this.sleeping) {
     // if there is a timeout, clear it out
     clearTimeout(this.sleeping)
   }
 
-  FeedEndQueueStop()
-  FeedStartQueueStop()
+  MetaStartQueueStop()
+  MetaEndQueueStop()
 
   if (STANDALONE) {
     mongoose.stop(error => {
@@ -105,7 +107,7 @@ if (STANDALONE) {
 
   logger.level(program.debug ? 'debug' : program.verbose ? 'info' : 'error')
 
-  const daemon = new FeedUpdaterDaemon(program.force)
+  const daemon = new MetaUpdaterDaemon(program.force)
 
   daemon.start()
 
@@ -119,5 +121,5 @@ if (STANDALONE) {
   })
 } else {
   // export daemon
-  module.exports = FeedUpdaterDaemon
+  module.exports = MetaUpdaterDaemon
 }

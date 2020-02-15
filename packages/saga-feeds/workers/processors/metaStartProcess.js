@@ -1,14 +1,14 @@
 const mongoose = require('mongoose')
 
-const { FeedEndQueueAdd } = require('../queues/feedEndQueue')
-const { processFeed } = require('../../helpers/processFeed')
+const { MetaEndQueueAdd } = require('../queues/metaEndQueue')
+const { processMeta } = require('../../helpers/meta')
 const logger = require('../../helpers/logger').getLogger()
 
 module.exports = async (job, done) => {
   const { data } = job
 
-  if (data.type !== 'Feed') {
-    logger.warn('Received a non-feed job in the feed queue processor', data)
+  if (data.type !== 'Meta') {
+    logger.warn('Received a non-meta job in the meta queue processor', data)
     return done()
   }
 
@@ -17,24 +17,24 @@ module.exports = async (job, done) => {
     return done()
   }
 
-  logger.debug('Starting a new feed job', {
+  logger.debug('Starting a new meta job', {
     queue: job.queue.name,
     data,
   })
 
   try {
-    const results = await processFeed(data.url)
+    const results = await processMeta(data.url)
 
-    await FeedEndQueueAdd({
-      type: 'Feed',
+    await MetaEndQueueAdd({
+      type: 'Meta',
       feedId: data.feedId,
-      url: data.feedUrl,
+      url: data.url,
       results,
     })
 
     return done(null, results)
   } catch (error) {
-    logger.error('Failed when processing feed job', {
+    logger.error('Failed when processing meta job', {
       data,
       error,
       queue: job.queue.name,

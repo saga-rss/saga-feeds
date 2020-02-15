@@ -67,6 +67,11 @@ const schema = new Schema(
         trim: true,
         default: '',
       },
+      logo: {
+        type: String,
+        trim: true,
+        default: '',
+      },
     },
     public: {
       type: Boolean,
@@ -80,7 +85,7 @@ const schema = new Schema(
       type: Date,
       default: Date.now,
     },
-    valid: {
+    isValid: {
       type: Boolean,
       default: true,
       index: true,
@@ -106,6 +111,10 @@ const schema = new Schema(
       type: String,
       default: '',
     },
+    publisher: {
+      type: String,
+      default: '',
+    },
     interests: {
       type: [String],
       index: true,
@@ -119,6 +128,11 @@ const schema = new Schema(
       default: 0,
     },
     feedStaleDate: {
+      type: Date,
+      default: Date.now,
+      index: true,
+    },
+    metaStaleDate: {
       type: Date,
       default: Date.now,
       index: true,
@@ -152,6 +166,7 @@ schema.methods.detailView = function detailView() {
     'updatedAt',
     'updatedDate',
     'feedStaleDate',
+    'metaStaleDate',
     'scrapeFailureCount',
     'interests',
   ]
@@ -161,8 +176,17 @@ schema.methods.detailView = function detailView() {
   return transformed
 }
 
-schema.statics.addScrapeFailure = async function(id) {
+schema.statics.addScrapeFailure = async function addScrapeFailure(id) {
   await this.findOneAndUpdate({ _id: id }, { $inc: { scrapeFailureCount: 1 } }).exec()
+}
+
+schema.statics.invalidateFeed = async function addScrapeFailure(id) {
+  await this.findOneAndUpdate(
+    { _id: id },
+    {
+      isValid: false,
+    },
+  ).exec()
 }
 
 schema.statics.createOrUpdateFeed = async function createOrUpdateFeed(discovery) {
@@ -191,7 +215,7 @@ schema.statics.createOrUpdateFeed = async function createOrUpdateFeed(discovery)
           lastScrapedDate: new Date().toISOString(),
           title: entities.decodeHTML(feedTitle),
           url: discovery.site.url,
-          valid: true,
+          isValid: true,
         },
         {
           new: true,

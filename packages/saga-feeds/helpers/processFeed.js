@@ -247,6 +247,4 @@ const filterEnclosures = enclosures => {
   return filtered
 }
 
-module.exports = {
-  processFeed,
-}
+module.exports = { processFeed }

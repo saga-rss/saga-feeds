@@ -9,16 +9,16 @@ module.exports = async (job, done) => {
   const { data } = job
 
   if (data.type !== 'Feed') {
-    logger.warn('Received a non-rss job in the feed queue processor', data)
+    logger.warn('Received a non-feed job in the feed queue processor', data)
     return done()
   }
 
-  if (!data.rssId || !mongoose.Types.ObjectId.isValid(data.rssId)) {
-    logger.warn('Received an invalid rss ID in the feed queue processor', data)
+  if (!data.feedId || !mongoose.Types.ObjectId.isValid(data.feedId)) {
+    logger.warn('Received an invalid Feed ID in the feed queue processor', data)
     return done()
   }
 
-  logger.debug('Saving the results of a new rss job', {
+  logger.debug('Saving the results of a new feed job', {
     queue: job.queue.name,
     data,
   })
@@ -27,7 +27,7 @@ module.exports = async (job, done) => {
     const { meta, posts } = data.results
 
     const updatedFeed = await Feed.findOneAndUpdate(
-      { _id: data.rssId },
+      { _id: data.feedId },
       {
         ...meta,
         scrapeFailureCount: 0, // reset failure count to 0
@@ -44,7 +44,7 @@ module.exports = async (job, done) => {
           { identifier: post.identifier },
           {
             ...post,
-            feed: data.rssId,
+            feed: data.feedId,
           },
           { new: true, upsert: true },
         )
@@ -56,7 +56,7 @@ module.exports = async (job, done) => {
       posts: updatedPosts,
     })
   } catch (error) {
-    logger.error('Failed when processing rss job', {
+    logger.error('Failed when processing feed job', {
       data,
       error,
       queue: job.queue.name,

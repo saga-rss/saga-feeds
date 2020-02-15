@@ -19,5 +19,12 @@ module.exports = {
       autorestart: true,
       args: '-d',
     },
+    {
+      name: 'saga-meta-updater',
+      script: './daemon/meta-updater.js',
+      watch: true,
+      autorestart: true,
+      args: '-d',
+    },
   ],
 }
