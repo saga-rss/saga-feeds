@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 const { MetaEndQueueAdd } = require('../queues/metaEndQueue')
-const { processMeta } = require('../../helpers/meta')
+const { processMeta } = require('../../helpers/processMeta')
 const logger = require('../../helpers/logger').getLogger()
 
 module.exports = async (job, done) => {

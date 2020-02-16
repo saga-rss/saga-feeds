@@ -201,7 +201,7 @@ schema.statics.createOrUpdateFeed = async function createOrUpdateFeed(discovery)
           },
           lastScrapedDate: new Date().toISOString(),
           title: entities.decodeHTML(feedTitle),
-          url: discovery.site.url,
+          url: normalizeUrl(discovery.site.url),
           isValid: true,
         },
         {

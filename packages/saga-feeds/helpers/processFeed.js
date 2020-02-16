@@ -70,7 +70,7 @@ const readFeedStream = (stream, feedUrl) => {
       .on('readable', function() {
         const streamFeed = this
         feed.meta = {
-          url: this.meta.link,
+          url: normalize(this.meta.link),
           language: this.meta.language,
           image: {
             featured: this.meta.image && this.meta.image.url ? this.meta.image.url : '',
@@ -94,10 +94,14 @@ const readFeedStream = (stream, feedUrl) => {
   })
 }
 
-const createPostIdentifier = (guid, pubDate) => {
+const createPostIdentifier = (guid, link, enclosures) => {
+  let id = `${guid}:${link}`
+  if (enclosures && enclosures.length) {
+    id += `:${enclosures[0].url}`
+  }
   return crypto
     .createHash('md5')
-    .update(`${guid}:${pubDate}`)
+    .update(id)
     .digest('hex')
 }
 
@@ -121,7 +125,7 @@ const postProcessing = async posts => {
       images: {
         featured: post.image.url || '',
       },
-      identifier: createPostIdentifier(post.guid, post.pubDate),
+      identifier: createPostIdentifier(post.guid, post.link, post.enclosures),
       interests: [],
       author: '',
     }

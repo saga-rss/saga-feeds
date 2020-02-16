@@ -4,7 +4,7 @@ const mongoose = require('mongoose')
 const { wrapAsync } = require('./utils')
 const { discoverFeeds } = require('../helpers/discovery')
 const Feed = require('../models/feed')
-const { FeedStartQueueAdd } = require('../workers/queues')
+const { FeedStartQueueAdd, MetaStartQueueAdd } = require('../workers/queues')
 
 const listFeeds = wrapAsync(async (req, res, next) => {
   const query = req.query || {}
@@ -31,12 +31,21 @@ const createFeed = wrapAsync(async (req, res, next) => {
 
   const results = await Feed.createOrUpdateFeed(discovered)
 
-  results.newFeeds.map(newFeed => {
+  results.newFeeds.forEach(newFeed => {
     FeedStartQueueAdd(
       {
         type: 'Feed',
-        rssId: newFeed._id,
+        feedId: newFeed._id,
         url: newFeed.feedUrl,
+      },
+      { removeOnComplete: true, removeOnFail: true },
+    )
+
+    MetaStartQueueAdd(
+      {
+        type: 'Meta',
+        feedId: newFeed._id,
+        url: newFeed.url,
       },
       { removeOnComplete: true, removeOnFail: true },
     )

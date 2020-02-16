@@ -58,7 +58,7 @@ FeedUpdaterDaemon.prototype.start = function start() {
         process.exit(1)
       }
 
-      this.goToSleep(this.updateFeeds)
+      this.updateFeeds()
     })
   } else {
     this.updateFeeds()
