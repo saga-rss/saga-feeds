@@ -6,8 +6,10 @@ const strip = require('strip')
 const entities = require('entities')
 const { addHours, formatISO } = require('date-fns')
 const crypto = require('crypto')
+const Promise = require('bluebird')
 
 const logger = require('./logger').getLogger()
+const { processMeta } = require('./processMeta')
 
 const processFeed = async feedUrl => {
   const stream = await createFeedStream(feedUrl)
@@ -110,74 +112,75 @@ const postProcessing = async posts => {
 
   const postType = determineFeedType(posts)
 
-  const articles = posts.map(post => {
-    const processed = {
-      postType,
-      content: sanitizeHtml(post.summary),
-      description: strip(entities.decodeHTML(post.description)),
-      enclosures: processEnclosures(post.enclosures),
-      guid: post.guid,
-      link: post.link,
-      publishedDate: post.pubdate || post.pubDate,
-      title: post.title,
-      url: post.link ? normalize(post.link) : '',
-      commentUrl: post.comments,
-      images: {
-        featured: post.image.url || '',
-      },
-      identifier: createPostIdentifier(post.guid, post.link, post.enclosures),
-      interests: [],
-      author: '',
-    }
+  return Promise.map(posts, post => {
+    return processMeta(post.link).then(postMeta => {
+      const processed = {
+        postType,
+        content: sanitizeHtml(post.summary),
+        description: postMeta.description || strip(entities.decodeHTML(post.description)),
+        enclosures: processEnclosures(post.enclosures),
+        guid: post.guid,
+        link: post.link,
+        publishedDate: post.pubdate || post.pubDate,
+        title: post.title,
+        url: post.link ? normalize(post.link) : '',
+        commentUrl: post.comments,
+        images: {
+          featured: postMeta.image || post.image.url || '',
+          logo: postMeta.logo || '',
+        },
+        identifier: createPostIdentifier(post.guid, post.link, post.enclosures),
+        interests: [],
+        author: postMeta.author || '',
+      }
 
-    if (post.categories) {
-      processed.interests = post.categories
-    }
+      if (post.categories) {
+        processed.interests = post.categories
+      }
 
-    if (post['media:content']) {
-      const content = post['media:content']
-      processed.enclosures = processMedia(content, processed.enclosures)
+      if (post['media:content']) {
+        const content = post['media:content']
+        processed.enclosures = processMedia(content, processed.enclosures)
 
-      if (content['media:credit']) {
-        if (Array.isArray(content['media:credit'])) {
-          content['media:credit'].map(credit => processed.interests.push(credit['#']))
-        } else {
-          processed.interests.push(content['media:credit']['#'])
+        if (content['media:credit']) {
+          if (Array.isArray(content['media:credit'])) {
+            content['media:credit'].map(credit => processed.interests.push(credit['#']))
+          } else {
+            processed.interests.push(content['media:credit']['#'])
+          }
         }
       }
-    }
 
-    if (post['media:group']) {
-      if (Array.isArray(post['media:group']['media:content'])) {
-        post['media:group']['media:content'].map(content => {
-          processed.enclosures = processMedia(content, processed.enclosures)
+      if (post['media:group']) {
+        if (Array.isArray(post['media:group']['media:content'])) {
+          post['media:group']['media:content'].map(content => {
+            processed.enclosures = processMedia(content, processed.enclosures)
+          })
+        }
+      }
+
+      if (post['yt:videoid']) {
+        const youtubeId = post['yt:videoid']['#']
+
+        processed.enclosures.push({
+          type: 'youtube',
+          url: `https://www.youtube.com/watch?v=${youtubeId}`,
         })
+
+        if (post['media:group'] && !processed.description) {
+          processed.description = post['media:group']['media:description']['#']
+        }
       }
-    }
 
-    if (post['yt:videoid']) {
-      const youtubeId = post['yt:videoid']['#']
-
-      processed.enclosures.push({
-        type: 'youtube',
-        url: `https://www.youtube.com/watch?v=${youtubeId}`,
-      })
-
-      if (post['media:group'] && !processed.description) {
-        processed.description = post['media:group']['media:description']['#']
+      if (post['atom:author']) {
+        processed.author = post['atom:author']['name'] ? post['atom:author']['name']['#'] : ''
       }
-    }
 
-    if (post['atom:author']) {
-      processed.author = post['atom:author']['name'] ? post['atom:author']['name']['#'] : ''
-    }
+      processed.enclosures = filterEnclosures(processed.enclosures)
 
-    processed.enclosures = filterEnclosures(processed.enclosures)
-
-    return processed
+      return processed
+    })
   })
-
-  return articles
 }
 
 const processMedia = (content, media) => {

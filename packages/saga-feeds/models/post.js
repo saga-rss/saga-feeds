@@ -110,12 +110,7 @@ const schema = new Schema(
         trim: true,
         default: '',
       },
-      favicon: {
-        type: String,
-        trim: true,
-        default: '',
-      },
-      openGraph: {
+      logo: {
         type: String,
         trim: true,
         default: '',

@@ -7,6 +7,7 @@ const metascraper = require('metascraper')([
   require('metascraper-title')(),
   require('metascraper-url')(),
   require('metascraper-lang')(),
+  require('metascraper-author')(),
 ])
 
 const got = require('got')
