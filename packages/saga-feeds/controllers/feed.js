@@ -1,10 +1,13 @@
 const normalizeUrl = require('normalize-url')
 const mongoose = require('mongoose')
+const Promise = require('bluebird')
 
 const { wrapAsync } = require('./utils')
 const { discoverFeeds } = require('../helpers/discovery')
 const Feed = require('../models/feed')
+const Post = require('../models/post')
 const { FeedStartQueueAdd, MetaStartQueueAdd } = require('../workers/queues')
+const { processFeed } = require('../helpers/processFeed')
 
 const listFeeds = wrapAsync(async (req, res, next) => {
   const query = req.query || {}
@@ -31,6 +34,39 @@ const createFeed = wrapAsync(async (req, res, next) => {
 
   const results = await Feed.createOrUpdateFeed(discovered)
 
+  if (!results.feeds.length && results.newFeeds.length) {
+    const created = results.newFeeds.find(f => (f.feedUrl = normalizedFeedUrl))
+
+    if (created) {
+      const { meta, posts } = await processFeed(feedUrl)
+      const updatedFeed = await Feed.findOneAndUpdate(
+        { _id: data.feedId },
+        {
+          ...meta,
+          scrapeFailureCount: 0, // reset failure count to 0
+        },
+        {
+          new: true,
+        },
+      )
+
+      if (posts.length) {
+        await Promise.map(posts, post => {
+          return Post.findOneAndUpdate(
+            { identifier: post.identifier },
+            {
+              ...post,
+              feed: data.feedId,
+            },
+            { new: true, upsert: true },
+          )
+        })
+      }
+
+      res.json(updatedFeed.detailView())
+    }
+  }
+
   results.newFeeds.forEach(newFeed => {
     FeedStartQueueAdd(
       {
@@ -51,7 +87,7 @@ const createFeed = wrapAsync(async (req, res, next) => {
     )
   })
 
-  res.send(results.feeds)
+  res.json(results.feeds[0])
 
   return next()
 })

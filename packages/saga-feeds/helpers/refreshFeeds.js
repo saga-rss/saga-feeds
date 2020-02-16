@@ -2,7 +2,6 @@ const got = require('got')
 
 const Feed = require('../models/feed')
 const { FeedStartQueueAdd, MetaStartQueueAdd } = require('../workers/queues')
-const { shouldFeedPostsUpdate } = require('../util/rss')
 const logger = require('./logger').getLogger()
 
 const JOB_TYPE_FEED = 'feed'
@@ -44,7 +43,7 @@ const refreshFeeds = async (forceUpdate = false, jobType = JOB_TYPE_FEED) => {
 }
 
 const scheduleFeedJob = async (doc, freshFeed, forceUpdate) => {
-  const willUpdate = shouldFeedPostsUpdate(doc.feedStaleDate, freshFeed.headers)
+  const willUpdate = doc.feedNeedsUpdating(freshFeed.headers)
 
   if (forceUpdate || willUpdate) {
     await FeedStartQueueAdd(
@@ -59,7 +58,7 @@ const scheduleFeedJob = async (doc, freshFeed, forceUpdate) => {
 }
 
 const scheduleMetaJob = async (doc, freshFeed, forceUpdate) => {
-  const willUpdate = shouldFeedPostsUpdate(doc.feedStaleDate, freshFeed.headers)
+  const willUpdate = doc.feedNeedsUpdating(freshFeed.headers)
 
   if (forceUpdate || willUpdate) {
     await MetaStartQueueAdd(

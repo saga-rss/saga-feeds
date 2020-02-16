@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const mongooseStringQuery = require('mongoose-string-query')
 const autopopulate = require('mongoose-autopopulate')
+const mongooseDelete = require('mongoose-delete')
 
 const MediaSchema = new Schema({
   url: {
@@ -83,10 +84,14 @@ const schema = new Schema(
       trim: true,
       required: true,
     },
+    summary: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     description: {
       type: String,
       trim: true,
-      maxLength: 240,
       default: '',
     },
     content: {
@@ -154,6 +159,7 @@ schema.methods.detailView = function detailView() {
     'url',
     'feedUrl',
     'likeCount',
+    'summary',
     'description',
     'images',
     'content',
@@ -173,6 +179,10 @@ schema.methods.detailView = function detailView() {
 
 schema.plugin(mongooseStringQuery)
 schema.plugin(autopopulate)
+schema.plugin(mongooseDelete, {
+  overrideMethods: true,
+  deletedAt: true,
+})
 
 schema.index({ rss: 1, publishedDate: -1 })
 schema.index({ publishedDate: -1 })

@@ -4,7 +4,7 @@ const mongooseStringQuery = require('mongoose-string-query')
 const mongooseDelete = require('mongoose-delete')
 const normalizeUrl = require('normalize-url')
 const entities = require('entities')
-const { subSeconds, isAfter } = require('date-fns')
+const { formatISO, addHours, subSeconds, isAfter } = require('date-fns')
 const Promise = require('bluebird')
 
 const schema = new Schema(
@@ -172,8 +172,39 @@ schema.methods.detailView = function detailView() {
   return transformed
 }
 
+schema.methods.feedNeedsUpdating = function feedNeedsUpdating(feedHeaders) {
+  const thirtySecondsAgo = subSeconds(new Date(), 30)
+
+  const feedStale = isAfter(new Date(this.feedStaleDate), thirtySecondsAgo)
+
+  const lastModifiedDate = feedHeaders['last-modified'] || new Date()
+  const feedModified = isAfter(new Date(lastModifiedDate), thirtySecondsAgo)
+
+  return feedStale || feedModified
+}
+
 schema.statics.addScrapeFailure = async function addScrapeFailure(id) {
   await this.findOneAndUpdate({ _id: id }, { $inc: { scrapeFailureCount: 1 } }).exec()
+}
+
+schema.statics.updateFeedMeta = async function updateFeedMeta(feedId, meta) {
+  const updatedFeed = await this.findOneAndUpdate(
+    { _id: feedId },
+    {
+      summary: meta.description,
+      images: {
+        logo: meta.logo,
+        openGraph: meta.image,
+      },
+      publisher: meta.publisher,
+      metaStaleDate: formatISO(addHours(new Date(), 1)),
+    },
+    {
+      new: true,
+    },
+  )
+
+  return updatedFeed
 }
 
 schema.statics.createOrUpdateFeed = async function createOrUpdateFeed(discovery) {

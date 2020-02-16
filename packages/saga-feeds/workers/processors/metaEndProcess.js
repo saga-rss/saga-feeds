@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-const { formatISO, addHours } = require('date-fns')
 
 const logger = require('../../helpers/logger').getLogger()
 const Feed = require('../../models/feed')
@@ -23,21 +22,7 @@ module.exports = async (job, done) => {
   })
 
   try {
-    const updatedFeed = await Feed.findOneAndUpdate(
-      { _id: data.feedId },
-      {
-        summary: data.results.description,
-        images: {
-          logo: data.results.logo,
-          openGraph: data.results.image,
-        },
-        publisher: data.results.publisher,
-        metaStaleDate: formatISO(addHours(new Date(), 1)),
-      },
-      {
-        new: true,
-      },
-    )
+    const updatedFeed = await Feed.updateFeedMeta(data.feedId, data.results)
 
     return done(null, { feed: updatedFeed })
   } catch (error) {

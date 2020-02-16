@@ -36,9 +36,7 @@ MetaUpdaterDaemon.prototype.updateFeedsMeta = function updateFeed() {
     return false
   }
 
-  refreshFeeds(this.forcedUpdate, JOB_TYPE_META).then(feeds => {
-    logger.info(`feeds to update`, feeds)
-
+  refreshFeeds(this.forcedUpdate, JOB_TYPE_META).then(() => {
     this.goToSleep(this.updateFeedsMeta)
   })
 }

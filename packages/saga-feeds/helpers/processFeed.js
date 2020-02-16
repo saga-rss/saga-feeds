@@ -50,7 +50,7 @@ const determineFeedType = posts => {
 
 const readFeedStream = (stream, feedUrl) => {
   const feed = {
-    meta: '',
+    meta: null,
     posts: [],
   }
   return new Promise((resolve, reject) => {
@@ -199,7 +199,7 @@ const processMedia = (content, media) => {
   media.push({
     url: mainContent.url,
     type: mainContent.type || '',
-    length: mainContent.filesize || '',
+    length: mainContent.filesize || mainContent.length || '',
     width: mainContent.width || '',
     height: mainContent.height || '',
     title: contentTitle,
