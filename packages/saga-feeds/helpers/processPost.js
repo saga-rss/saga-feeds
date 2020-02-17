@@ -106,6 +106,15 @@ const normalizePost = async post => {
 
   processed.enclosures = filterEnclosures(processed.enclosures)
 
+  if (processed.enclosures.length && !processed.images.featured.length) {
+    // if there is not a featured image, and there are enclosures,
+    // try to find an enclosure image to used as the featured image.
+    const images = processed.enclosures.filter(enclosure => enclosure.medium === 'image')
+    if (images.length) {
+      processed.images.featured = images[0].url
+    }
+  }
+
   logger.debug(`processed and normalized post`, {
     ...processed,
   })
