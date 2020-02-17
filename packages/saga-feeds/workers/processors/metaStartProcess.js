@@ -23,7 +23,7 @@ module.exports = async (job, done) => {
   })
 
   try {
-    const results = await processMeta(data.url)
+    const results = await processMeta(data.url, data.shouldUpdate)
 
     await MetaEndQueueAdd({
       type: 'Meta',

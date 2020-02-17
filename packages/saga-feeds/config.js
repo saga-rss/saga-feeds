@@ -1,7 +1,10 @@
 require('dotenv').config()
 
+const appInfo = require('./package.json')
+
 module.exports = {
-  app_name: 'saga-feeds',
+  appName: 'saga-feeds',
+  userAgent: `${appInfo.name}/${appInfo.version} ${appInfo.author} ${appInfo.homepage}`,
   env: process.env.NODE_ENV,
   mongo: {
     uri: process.env.SAGA_MONGO_URI,

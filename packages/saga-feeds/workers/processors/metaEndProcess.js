@@ -6,6 +6,11 @@ const Feed = require('../../models/feed')
 module.exports = async (job, done) => {
   const { data } = job
 
+  if (!data.results) {
+    logger.warn('This meta did not update', data)
+    return done()
+  }
+
   if (data.type !== 'Meta') {
     logger.warn('Received a non-meta job in the meta queue processor', data)
     return done()

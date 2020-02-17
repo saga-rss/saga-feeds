@@ -1,5 +1,4 @@
-const got = require('got')
-
+const got = require('../helpers/got')
 const Feed = require('../models/feed')
 const { FeedStartQueueAdd, MetaStartQueueAdd } = require('../workers/queues')
 const logger = require('./logger').getLogger()
@@ -45,31 +44,29 @@ const refreshFeeds = async (forceUpdate = false, jobType = JOB_TYPE_FEED) => {
 const scheduleFeedJob = async (doc, freshFeed, forceUpdate) => {
   const willUpdate = doc.feedNeedsUpdating(freshFeed.headers)
 
-  if (forceUpdate || willUpdate) {
-    await FeedStartQueueAdd(
-      {
-        type: 'Feed',
-        feedId: doc._id,
-        url: doc.feedUrl,
-      },
-      { removeOnComplete: true, removeOnFail: true },
-    )
-  }
+  await FeedStartQueueAdd(
+    {
+      type: 'Feed',
+      feedId: doc._id,
+      url: doc.feedUrl,
+      shouldUpdate: forceUpdate || willUpdate,
+    },
+    { removeOnComplete: true, removeOnFail: true },
+  )
 }
 
 const scheduleMetaJob = async (doc, freshFeed, forceUpdate) => {
   const willUpdate = doc.feedNeedsUpdating(freshFeed.headers)
 
-  if (forceUpdate || willUpdate) {
-    await MetaStartQueueAdd(
-      {
-        type: 'Meta',
-        feedId: doc._id,
-        url: doc.url,
-      },
-      { removeOnComplete: true, removeOnFail: true },
-    )
-  }
+  await MetaStartQueueAdd(
+    {
+      type: 'Meta',
+      feedId: doc._id,
+      url: doc.url,
+      shouldUpdate: forceUpdate || willUpdate,
+    },
+    { removeOnComplete: true, removeOnFail: true },
+  )
 }
 
 module.exports = {

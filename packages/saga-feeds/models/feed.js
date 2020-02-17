@@ -175,10 +175,12 @@ schema.methods.detailView = function detailView() {
 schema.methods.feedNeedsUpdating = function feedNeedsUpdating(feedHeaders) {
   const thirtySecondsAgo = subSeconds(new Date(), 30)
 
-  const feedStale = isAfter(new Date(this.feedStaleDate), thirtySecondsAgo)
+  const feedStale = isAfter(thirtySecondsAgo, new Date(this.feedStaleDate))
 
   const lastModifiedDate = feedHeaders['last-modified'] || new Date()
-  const feedModified = isAfter(new Date(lastModifiedDate), thirtySecondsAgo)
+  const feedModified = isAfter(new Date(), new Date(lastModifiedDate))
+
+  console.log(this.feedUrl, feedHeaders['last-modified'], feedStale, feedModified)
 
   return feedStale || feedModified
 }

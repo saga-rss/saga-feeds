@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "James Cole",
-  "license": "ISC",
+  "license": "GPL-3.0",
   "workspaces": [
     "packages/*"
   ],

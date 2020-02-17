@@ -8,6 +8,11 @@ const Post = require('../../models/post')
 module.exports = async (job, done) => {
   const { data } = job
 
+  if (!data.results) {
+    logger.warn('This feed did not update', data)
+    return done()
+  }
+
   if (data.type !== 'Feed') {
     logger.warn('Received a non-feed job in the feed queue processor', data)
     return done()

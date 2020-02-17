@@ -1,13 +1,15 @@
 const FeedParser = require('feedparser')
-const got = require('got')
 const normalizeUrl = require('normalize-url')
 const { addHours, formatISO } = require('date-fns')
 const Promise = require('bluebird')
 
+const got = require('../helpers/got')
 const logger = require('./logger').getLogger()
 const { processPost } = require('./processPost')
 
-const processFeed = async feedUrl => {
+const processFeed = async (feedUrl, shouldUpdate) => {
+  if (!shouldUpdate) return false
+
   const stream = await createFeedStream(feedUrl)
   const feed = await readFeedStream(stream, feedUrl)
 
