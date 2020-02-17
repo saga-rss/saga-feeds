@@ -49,50 +49,14 @@ const MediaSchema = new Schema({
 
 const schema = new Schema(
   {
-    feed: {
-      type: Schema.Types.ObjectId,
-      ref: 'Feed',
-      autopopulate: true,
-      required: true,
-      index: true,
-    },
-    postType: {
-      type: String,
-      enum: ['article', 'audio', 'video'],
-      default: 'article',
-    },
-    url: {
+    author: {
       type: String,
       trim: true,
-      required: true,
-      index: { type: 'hashed' },
+      index: true,
     },
     canonicalUrl: {
       type: String,
       trim: true,
-    },
-    guid: {
-      type: String,
-      trim: true,
-    },
-    link: {
-      type: String,
-      trim: true,
-    },
-    title: {
-      type: String,
-      trim: true,
-      required: true,
-    },
-    summary: {
-      type: String,
-      trim: true,
-      default: '',
-    },
-    description: {
-      type: String,
-      trim: true,
-      default: '',
     },
     content: {
       type: String,
@@ -103,6 +67,27 @@ const schema = new Schema(
       type: String,
       trim: true,
       default: '',
+    },
+    description: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    enclosures: [MediaSchema],
+    favoriteCount: {
+      type: Number,
+      default: 0,
+    },
+    feed: {
+      type: Schema.Types.ObjectId,
+      ref: 'Feed',
+      autopopulate: true,
+      required: true,
+      index: true,
+    },
+    guid: {
+      type: String,
+      trim: true,
     },
     images: {
       featured: {
@@ -116,28 +101,43 @@ const schema = new Schema(
         default: '',
       },
     },
-    publishedDate: {
-      type: Date,
-      default: Date.now,
-    },
-    enclosures: [MediaSchema],
-    favoriteCount: {
-      type: Number,
-      default: 0,
-    },
-    interests: {
-      type: [String],
-      index: true,
-    },
     identifier: {
       type: String,
       trim: true,
       index: true,
     },
-    author: {
+    interests: {
+      type: [String],
+      index: true,
+    },
+    link: {
       type: String,
       trim: true,
-      index: true,
+    },
+    postType: {
+      type: String,
+      enum: ['article', 'audio', 'video'],
+      default: 'article',
+    },
+    publishedDate: {
+      type: Date,
+      default: Date.now,
+    },
+    summary: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    title: {
+      type: String,
+      trim: true,
+      required: true,
+    },
+    url: {
+      type: String,
+      trim: true,
+      required: true,
+      index: { type: 'hashed' },
     },
   },
   {

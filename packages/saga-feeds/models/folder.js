@@ -4,11 +4,6 @@ import autopopulate from 'mongoose-autopopulate'
 
 const schema = new Schema(
   {
-    name: {
-      type: String,
-      trim: true,
-      required: true,
-    },
     feed: [
       {
         type: Schema.Types.ObjectId,
@@ -17,6 +12,11 @@ const schema = new Schema(
         autopopulate: true,
       },
     ],
+    name: {
+      type: String,
+      trim: true,
+      required: true,
+    },
   },
   {
     collection: 'folder',

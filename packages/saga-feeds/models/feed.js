@@ -9,19 +9,28 @@ const Promise = require('bluebird')
 
 const schema = new Schema(
   {
+    canonicalUrl: {
+      type: String,
+      trim: true,
+    },
+    description: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    favoriteCount: {
+      type: Number,
+      default: 0,
+    },
+    feedStaleDate: {
+      type: Date,
+      default: Date.now,
+      index: true,
+    },
     feedType: {
       type: String,
       enum: ['article', 'audio', 'video'],
       default: 'article',
-    },
-    url: {
-      type: String,
-      trim: true,
-      index: true,
-    },
-    canonicalUrl: {
-      type: String,
-      trim: true,
     },
     feedUrl: {
       type: String,
@@ -34,23 +43,9 @@ const schema = new Schema(
       type: String,
       trim: true,
     },
-    title: {
-      type: String,
-      trim: true,
-      required: true,
-    },
-    description: {
-      type: String,
-      trim: true,
-      default: '',
-    },
-    isFeatured: {
-      type: Boolean,
-      default: false,
-    },
-    isVisible: {
-      type: Boolean,
-      default: true,
+    followerCount: {
+      type: Number,
+      default: 0,
     },
     images: {
       featured: {
@@ -74,42 +69,17 @@ const schema = new Schema(
         default: '',
       },
     },
-    public: {
+    isFeatured: {
+      type: Boolean,
+      default: false,
+    },
+    isPublic: {
       type: Boolean,
       default: true,
     },
-    publishedDate: {
-      type: Date,
-      default: Date.now,
-    },
-    updatedDate: {
-      type: Date,
-      default: Date.now,
-    },
-    lastScrapedDate: {
-      type: Date,
-      default: Date.now,
-      index: true,
-    },
-    favoriteCount: {
-      type: Number,
-      default: 0,
-    },
-    followerCount: {
-      type: Number,
-      default: 0,
-    },
-    postCount: {
-      type: Number,
-      default: 0,
-    },
-    summary: {
-      type: String,
-      default: '',
-    },
-    publisher: {
-      type: String,
-      default: '',
+    isVisible: {
+      type: Boolean,
+      default: true,
     },
     interests: {
       type: [String],
@@ -119,11 +89,7 @@ const schema = new Schema(
       type: String,
       default: '',
     },
-    scrapeFailureCount: {
-      type: Number,
-      default: 0,
-    },
-    feedStaleDate: {
+    lastScrapedDate: {
       type: Date,
       default: Date.now,
       index: true,
@@ -131,6 +97,40 @@ const schema = new Schema(
     metaStaleDate: {
       type: Date,
       default: Date.now,
+      index: true,
+    },
+    postCount: {
+      type: Number,
+      default: 0,
+    },
+    publishedDate: {
+      type: Date,
+      default: Date.now,
+    },
+    publisher: {
+      type: String,
+      default: '',
+    },
+    scrapeFailureCount: {
+      type: Number,
+      default: 0,
+    },
+    summary: {
+      type: String,
+      default: '',
+    },
+    title: {
+      type: String,
+      trim: true,
+      required: true,
+    },
+    updatedDate: {
+      type: Date,
+      default: Date.now,
+    },
+    url: {
+      type: String,
+      trim: true,
       index: true,
     },
   },
