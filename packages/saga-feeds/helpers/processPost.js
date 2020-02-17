@@ -8,11 +8,23 @@ const logger = require('./logger').getLogger()
 const { processMeta } = require('./processMeta')
 const Post = require('../models/Post')
 
-const processPost = async post => {
+/**
+ * Process a post, so that it can be saved
+ * in the db.
+ *
+ * @param post {object} - the RSS item
+ * @param forceUpdate {boolean} [false] - if true, the post is processed
+ * again. otherwise, the previously processed post is returned. however,
+ * if a post has not been found in the db, then it is processed despite
+ * this flag setting. this is an attempt to minimize pinging the post's
+ * source server.
+ * @returns {object} - the normalized post
+ */
+const processPost = async (post, forceUpdate = false) => {
   const postIdentifier = createPostIdentifier(post.guid, post.link, post.enclosures)
   let normalized = await Post.find({ identifier: postIdentifier })
 
-  if (!normalized) {
+  if (forceUpdate || !normalized) {
     // if the post was not found, it's either a new post,
     // or maybe the post identifier changed
     normalized = await normalizePost(post)

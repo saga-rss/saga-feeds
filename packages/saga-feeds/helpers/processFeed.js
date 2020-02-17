@@ -12,7 +12,7 @@ const processFeed = async feedUrl => {
   const feed = await readFeedStream(stream, feedUrl)
 
   const processedPosts = Promise.map(feed.posts, post => {
-    return processPost(post)
+    return processPost(post, false)
   })
 
   return { meta: feed.meta, posts: processedPosts }
