@@ -121,7 +121,7 @@ const schema = new Schema(
       default: Date.now,
     },
     enclosures: [MediaSchema],
-    likeCount: {
+    favoriteCount: {
       type: Number,
       default: 0,
     },
@@ -153,7 +153,7 @@ schema.methods.detailView = function detailView() {
     'title',
     'url',
     'feedUrl',
-    'likeCount',
+    'favoriteCount',
     'summary',
     'description',
     'images',
@@ -172,6 +172,14 @@ schema.methods.detailView = function detailView() {
   return transformed
 }
 
+schema.statics.updateByIdentifier = async function updateByIdentifier(identifier, post) {
+  return self.findOneAndUpdate({ identifier: post.identifier }, post, { new: true, upsert: true })
+}
+
+schema.statics.updateFavoriteCount = async function updateFavoriteCount(id, amount) {
+  await this.findOneAndUpdate({ _id: id }, { $inc: { favoriteCount: amount } }).exec()
+}
+
 schema.plugin(mongooseStringQuery)
 schema.plugin(autopopulate)
 schema.plugin(mongooseDelete, {
@@ -182,4 +190,4 @@ schema.plugin(mongooseDelete, {
 schema.index({ rss: 1, publishedDate: -1 })
 schema.index({ publishedDate: -1 })
 
-module.exports = mongoose.model('Post', schema)
+module.exports = mongoose.models.Post || mongoose.model('Post', schema)

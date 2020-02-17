@@ -91,7 +91,7 @@ const schema = new Schema(
       default: Date.now,
       index: true,
     },
-    likesCount: {
+    favoriteCount: {
       type: Number,
       default: 0,
     },
@@ -150,7 +150,7 @@ schema.methods.detailView = function detailView() {
     'url',
     'feedUrl',
     'followerCount',
-    'likesCount',
+    'favoriteCount',
     'summary',
     'language',
     'images',
@@ -185,6 +185,14 @@ schema.methods.feedNeedsUpdating = function feedNeedsUpdating(feedHeaders) {
 
 schema.statics.addScrapeFailure = async function addScrapeFailure(id) {
   await this.findOneAndUpdate({ _id: id }, { $inc: { scrapeFailureCount: 1 } }).exec()
+}
+
+schema.statics.updateFollowerCount = async function updateFollowerCount(id, amount) {
+  await this.findOneAndUpdate({ _id: id }, { $inc: { followerCount: amount } }).exec()
+}
+
+schema.statics.updateFavoriteCount = async function updateFavoriteCount(id, amount) {
+  await this.findOneAndUpdate({ _id: id }, { $inc: { favoriteCount: amount } }).exec()
 }
 
 schema.statics.updateFeedMeta = async function updateFeedMeta(feedId, meta) {

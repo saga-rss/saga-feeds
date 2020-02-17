@@ -40,14 +40,10 @@ module.exports = async (job, done) => {
     let updatedPosts = []
     if (posts.length) {
       updatedPosts = await Promise.map(posts, post => {
-        return Post.findOneAndUpdate(
-          { identifier: post.identifier },
-          {
-            ...post,
-            feed: data.feedId,
-          },
-          { new: true, upsert: true },
-        )
+        return Post.updateByIdentifier(post.identifier, {
+          ...post,
+          feed: data.feedId,
+        })
       })
     }
 

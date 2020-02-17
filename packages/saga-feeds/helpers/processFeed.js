@@ -1,22 +1,21 @@
 const FeedParser = require('feedparser')
 const got = require('got')
-const normalize = require('normalize-url')
-const sanitizeHtml = require('sanitize-html')
-const strip = require('strip')
-const entities = require('entities')
+const normalizeUrl = require('normalize-url')
 const { addHours, formatISO } = require('date-fns')
-const crypto = require('crypto')
 const Promise = require('bluebird')
 
 const logger = require('./logger').getLogger()
-const { processMeta } = require('./processMeta')
+const { processPost } = require('./processPost')
 
 const processFeed = async feedUrl => {
   const stream = await createFeedStream(feedUrl)
   const feed = await readFeedStream(stream, feedUrl)
-  const posts = await postProcessing(feed.posts)
 
-  return { meta: feed.meta, posts }
+  const processedPosts = Promise.map(feed.posts, post => {
+    return processPost(post)
+  })
+
+  return { meta: feed.meta, posts: processedPosts }
 }
 
 const createFeedStream = async feedUrl => {
@@ -33,7 +32,7 @@ const createFeedStream = async feedUrl => {
 
 const determineFeedType = posts => {
   let feedType = 'article'
-  posts.map(post => {
+  posts.forEach(post => {
     if (post.enclosures) {
       post.enclosures.forEach(enclosure => {
         if (!enclosure.type) {
@@ -55,6 +54,7 @@ const readFeedStream = (stream, feedUrl) => {
     meta: null,
     posts: [],
   }
+
   return new Promise((resolve, reject) => {
     stream
       .pipe(new FeedParser())
@@ -66,13 +66,15 @@ const readFeedStream = (stream, feedUrl) => {
         return reject(error)
       })
       .on('end', () => {
-        feed.meta.feedType = determineFeedType(feed.posts)
+        const feedType = determineFeedType(feed.posts)
+        feed.meta.feedType = feedType
+        feed.posts = feed.posts.map(post => (post.postType = feedType))
         return resolve(feed)
       })
       .on('readable', function() {
         const streamFeed = this
         feed.meta = {
-          url: normalize(this.meta.link),
+          url: normalizeUrl(this.meta.link),
           language: this.meta.language,
           image: {
             featured: this.meta.image && this.meta.image.url ? this.meta.image.url : '',
@@ -94,164 +96,6 @@ const readFeedStream = (stream, feedUrl) => {
         }
       })
   })
-}
-
-const createPostIdentifier = (guid, link, enclosures) => {
-  let id = `${guid}:${link}`
-  if (enclosures && enclosures.length) {
-    id += `:${enclosures[0].url}`
-  }
-  return crypto
-    .createHash('md5')
-    .update(id)
-    .digest('hex')
-}
-
-const postProcessing = async posts => {
-  if (!posts || !posts.length) return []
-
-  const postType = determineFeedType(posts)
-
-  return Promise.map(posts, post => {
-    return processMeta(post.link).then(postMeta => {
-      const processed = {
-        postType,
-        content: sanitizeHtml(post.summary),
-        description: postMeta.description || strip(entities.decodeHTML(post.description)),
-        enclosures: processEnclosures(post.enclosures),
-        guid: post.guid,
-        link: post.link,
-        publishedDate: post.pubdate || post.pubDate,
-        title: post.title,
-        url: post.link ? normalize(post.link) : '',
-        commentUrl: post.comments,
-        images: {
-          featured: postMeta.image || post.image.url || '',
-          logo: postMeta.logo || '',
-        },
-        identifier: createPostIdentifier(post.guid, post.link, post.enclosures),
-        interests: [],
-        author: postMeta.author || '',
-      }
-
-      if (post.categories) {
-        processed.interests = post.categories
-      }
-
-      if (post['media:content']) {
-        const content = post['media:content']
-        processed.enclosures = processMedia(content, processed.enclosures)
-
-        if (content['media:credit']) {
-          if (Array.isArray(content['media:credit'])) {
-            content['media:credit'].map(credit => processed.interests.push(credit['#']))
-          } else {
-            processed.interests.push(content['media:credit']['#'])
-          }
-        }
-      }
-
-      if (post['media:group']) {
-        if (Array.isArray(post['media:group']['media:content'])) {
-          post['media:group']['media:content'].map(content => {
-            processed.enclosures = processMedia(content, processed.enclosures)
-          })
-        }
-      }
-
-      if (post['yt:videoid']) {
-        const youtubeId = post['yt:videoid']['#']
-
-        processed.enclosures.push({
-          type: 'youtube',
-          url: `https://www.youtube.com/watch?v=${youtubeId}`,
-        })
-
-        if (post['media:group'] && !processed.description) {
-          processed.description = post['media:group']['media:description']['#']
-        }
-      }
-
-      if (post['atom:author']) {
-        processed.author = post['atom:author']['name'] ? post['atom:author']['name']['#'] : ''
-      }
-
-      processed.enclosures = filterEnclosures(processed.enclosures)
-
-      return processed
-    })
-  })
-}
-
-const processMedia = (content, media) => {
-  const mainContent = content['@']
-
-  let type = mainContent.medium
-
-  if (!type && mainContent.type) {
-    if (mainContent.type.indexOf('audio') >= 0) {
-      type = 'audio'
-    } else if (mainContent.type.indexOf('video') >= 0) {
-      type = 'video'
-    }
-  }
-
-  const contentTitle = content['media:title'] ? content['media:title']['#'] : ''
-  const contentDescription = content['media:description'] ? content['media:description']['#'] : ''
-
-  media.push({
-    url: mainContent.url,
-    type: mainContent.type || '',
-    length: mainContent.filesize || mainContent.length || '',
-    width: mainContent.width || '',
-    height: mainContent.height || '',
-    title: contentTitle,
-    description: contentDescription,
-    medium: type,
-  })
-
-  return media
-}
-
-const processEnclosures = enclosures => {
-  if (!enclosures || !Array.isArray(enclosures) || !enclosures.length || !enclosures[0].type) {
-    return []
-  }
-
-  return enclosures.map(enclosure => {
-    let medium = ''
-    if (enclosure.type.indexOf('audio') >= 0) {
-      medium = 'audio'
-    } else if (enclosure.type.indexOf('video') >= 0) {
-      medium = 'video'
-    } else if (enclosure.type.indexOf('image') >= 0) {
-      medium = 'image'
-    }
-    return {
-      ...enclosure,
-      medium,
-    }
-  })
-}
-
-const filterEnclosures = enclosures => {
-  if (!enclosures || !Array.isArray(enclosures) || !enclosures.length) {
-    return enclosures
-  }
-
-  const filtered = []
-  const urls = []
-
-  enclosures.forEach(enclosure => {
-    if (urls.indexOf(enclosure.url) >= 0) {
-      return false
-    } else {
-      filtered.push(enclosure)
-      urls.push(enclosure.url)
-    }
-  })
-
-  return filtered
 }
 
 module.exports = { processFeed }
