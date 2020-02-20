@@ -17,25 +17,21 @@ if (config.env === 'development') {
   // mongoose.set('debug', true)
 }
 
-const start = cb => {
+const start = () => {
   logger.info('starting mongodb connection')
 
   const uri = config.mongo.uri
 
-  return mongoose.connect(
-    uri,
-    {
-      keepAlive: 1,
-      useNewUrlParser: true,
-      useFindAndModify: false,
-    },
-    cb,
-  )
+  return mongoose.connect(uri, {
+    keepAlive: 1,
+    useNewUrlParser: true,
+    useFindAndModify: false,
+  })
 }
 
-const stop = cb => {
+const stop = () => {
   logger.info('shutting down mongodb connection')
-  return mongoose.disconnect(cb)
+  return mongoose.disconnect()
 }
 
 module.exports = {

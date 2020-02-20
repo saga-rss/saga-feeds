@@ -173,7 +173,7 @@ schema.methods.detailView = function detailView() {
 }
 
 schema.statics.updateByIdentifier = async function updateByIdentifier(identifier, post) {
-  return self.findOneAndUpdate({ identifier: post.identifier }, post, { new: true, upsert: true })
+  return this.findOneAndUpdate({ identifier: post.identifier }, post, { new: true, upsert: true })
 }
 
 schema.statics.updateFavoriteCount = async function updateFavoriteCount(id, amount) {

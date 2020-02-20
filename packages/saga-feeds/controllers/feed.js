@@ -32,62 +32,39 @@ const createFeed = wrapAsync(async (req, res, next) => {
     return res.status(404).json({ message: 'no feed urls were found' })
   }
 
-  const results = await Feed.createOrUpdateFeed(discovered)
+  const results = await Promise.mapSeries(discovered.feedUrls, async feedUrl => {
+    const { meta, posts } = await processFeed(feedUrl.url, true)
 
-  if (!results.feeds.length && results.newFeeds.length) {
-    const created = results.newFeeds.find(f => (f.feedUrl = normalizedFeedUrl))
+    const feedResponse = await Feed.findOneAndUpdate(
+      { identifier: meta.identifier },
+      {
+        ...meta,
+        feedUrl: normalizeUrl(feedUrl.url),
+      },
+      {
+        new: true,
+        upsert: true,
+      },
+    )
 
-    if (created) {
-      const { meta, posts } = await processFeed(feedUrl)
-      const updatedFeed = await Feed.findOneAndUpdate(
-        { _id: data.feedId },
-        {
-          ...meta,
-          scrapeFailureCount: 0, // reset failure count to 0
-        },
-        {
-          new: true,
-        },
-      )
-
-      if (posts.length) {
-        await Promise.map(posts, post => {
-          return Post.findOneAndUpdate(
-            { identifier: post.identifier },
-            {
-              ...post,
-              feed: data.feedId,
-            },
-            { new: true, upsert: true },
-          )
-        })
-      }
-
-      res.json(updatedFeed.detailView())
+    if (posts.length) {
+      await Promise.map(posts, post => {
+        console.log(post)
+        return Post.findOneAndUpdate(
+          { identifier: post.identifier },
+          {
+            ...post,
+            feed: feedResponse._id,
+          },
+          { new: true, upsert: true },
+        )
+      })
     }
-  }
 
-  results.newFeeds.forEach(newFeed => {
-    FeedStartQueueAdd(
-      {
-        type: 'Feed',
-        feedId: newFeed._id,
-        url: newFeed.feedUrl,
-      },
-      { removeOnComplete: true, removeOnFail: true },
-    )
-
-    MetaStartQueueAdd(
-      {
-        type: 'Meta',
-        feedId: newFeed._id,
-        url: newFeed.url,
-      },
-      { removeOnComplete: true, removeOnFail: true },
-    )
+    return feedResponse
   })
 
-  res.json(results.feeds[0])
+  res.json(results[0])
 
   return next()
 })

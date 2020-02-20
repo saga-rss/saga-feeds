@@ -43,18 +43,18 @@ const normalizePost = async post => {
   const postMeta = await processMeta(post.link)
 
   const processed = {
-    postType: post.type,
+    postType: post.postType,
     content: sanitizeHtml(post.summary),
     description: postMeta.description || strip(entities.decodeHTML(post.description)),
     enclosures: processEnclosures(post.enclosures),
     guid: post.guid,
-    link: post.link ? normalizeUrl(post.link) : '',
+    link: post.link,
     publishedDate: post.pubdate || post.pubDate,
     title: post.title,
-    url: post.link ? normalizeUrl(post.link) : '',
+    url: post.link,
     commentUrl: post.comments,
     images: {
-      featured: postMeta.image || post.image.url || '',
+      featured: postMeta.image ? postMeta.image : post.image ? post.image.url : '',
       logo: postMeta.logo || '',
     },
     identifier: createPostIdentifier(post.guid, post.link, post.enclosures),
@@ -106,7 +106,7 @@ const normalizePost = async post => {
 
   processed.enclosures = filterEnclosures(processed.enclosures)
 
-  if (processed.enclosures.length && !processed.images.featured.length) {
+  if (processed.enclosures.length && (!processed.images.featured || !processed.images.featured.length)) {
     // if there is not a featured image, and there are enclosures,
     // try to find an enclosure image to use as the featured image.
     const images = processed.enclosures.filter(enclosure => enclosure.medium === 'image')
@@ -222,7 +222,7 @@ const processEnclosures = enclosures => {
  */
 const filterEnclosures = enclosures => {
   if (!enclosures || !Array.isArray(enclosures) || !enclosures.length) {
-    return enclosures
+    return []
   }
 
   const filtered = []

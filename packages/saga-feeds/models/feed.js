@@ -47,6 +47,10 @@ const schema = new Schema(
       type: Number,
       default: 0,
     },
+    identifier: {
+      type: String,
+      trim: true,
+    },
     images: {
       featured: {
         type: String,
@@ -72,14 +76,17 @@ const schema = new Schema(
     isFeatured: {
       type: Boolean,
       default: false,
+      index: true,
     },
     isPublic: {
       type: Boolean,
       default: true,
+      index: true,
     },
     isVisible: {
       type: Boolean,
       default: true,
+      index: true,
     },
     interests: {
       type: [String],
@@ -158,6 +165,7 @@ schema.methods.detailView = function detailView() {
     'description',
     'publishedDate',
     'isVisible',
+    'isPublic',
     'createdAt',
     'updatedAt',
     'updatedDate',
@@ -165,6 +173,7 @@ schema.methods.detailView = function detailView() {
     'metaStaleDate',
     'scrapeFailureCount',
     'interests',
+    'identifier',
   ]
   fields.forEach(field => {
     transformed[field] = this[field]
@@ -179,8 +188,6 @@ schema.methods.feedNeedsUpdating = function feedNeedsUpdating(feedHeaders) {
 
   const lastModifiedDate = feedHeaders['last-modified'] || new Date()
   const feedModified = isAfter(new Date(), new Date(lastModifiedDate))
-
-  console.log(this.feedUrl, feedHeaders['last-modified'], feedStale, feedModified)
 
   return feedStale || feedModified
 }

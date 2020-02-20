@@ -4,9 +4,13 @@ const mongoose = require('./services/mongoose')
 mongoose.start()
 server.start()
 
-process.on('SIGINT', function() {
-  mongoose.stop()
-  server.stop()
+// graceful shutdown
+const shutdownSignals = ['SIGINT', 'SIGTERM', 'SIGQUIT']
+shutdownSignals.forEach(signal => {
+  process.on(signal, function() {
+    mongoose.stop()
+    server.stop()
+  })
 })
 
 module.exports = server

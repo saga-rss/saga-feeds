@@ -52,14 +52,15 @@ MetaUpdaterDaemon.prototype.start = function start() {
   MetaEndQueueProcess()
 
   if (STANDALONE) {
-    mongoose.start(error => {
-      if (error) {
+    return mongoose
+      .start()
+      .then(() => {
+        this.updateFeedsMeta()
+      })
+      .catch(error => {
         logger.error(error.message, { error })
         process.exit(1)
-      }
-
-      this.updateFeedsMeta()
-    })
+      })
   } else {
     this.updateFeedsMeta()
   }
@@ -77,15 +78,16 @@ MetaUpdaterDaemon.prototype.stop = function stop(code) {
   MetaEndQueueStop()
 
   if (STANDALONE) {
-    mongoose.stop(error => {
-      if (error) {
+    return mongoose
+      .stop()
+      .then(() => {
+        logger.info('stopped feed updater daemon')
+        process.exit(code)
+      })
+      .catch(error => {
         logger.error(error.message, { error })
         return process.exit(1)
-      }
-
-      logger.info('stopped feed updater daemon')
-      process.exit(code)
-    })
+      })
   } else {
     // pause the processing
     this.isPaused = true
@@ -109,13 +111,12 @@ if (STANDALONE) {
 
   daemon.start()
 
-  // Graceful shutdown.
-  process.on('SIGINT', function() {
-    daemon.stop(1)
-  })
-
-  process.on('SIGQUIT', function() {
-    daemon.stop(1)
+  // Graceful shutdown
+  const shutdownSignals = ['SIGINT', 'SIGTERM', 'SIGQUIT']
+  shutdownSignals.forEach(signal => {
+    process.on(signal, function() {
+      daemon.stop(signal === 'SIGINT' ? 1 : 0)
+    })
   })
 } else {
   // export daemon

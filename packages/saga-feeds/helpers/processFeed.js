@@ -2,6 +2,8 @@ const FeedParser = require('feedparser')
 const normalizeUrl = require('normalize-url')
 const { addHours, formatISO } = require('date-fns')
 const Promise = require('bluebird')
+const url = require('url')
+const crypto = require('crypto')
 
 const got = require('../helpers/got')
 const logger = require('./logger').getLogger()
@@ -11,13 +13,15 @@ const processFeed = async (feedUrl, shouldUpdate) => {
   if (!shouldUpdate) return false
 
   const stream = await createFeedStream(feedUrl)
-  const feed = await readFeedStream(stream, feedUrl)
+  const { meta, posts } = await readFeedStream(stream, feedUrl)
 
-  const processedPosts = Promise.map(feed.posts, post => {
-    return processPost(post, false)
+  const processedPosts = await Promise.map(posts, post => {
+    return processPost(post, shouldUpdate)
   })
 
-  return { meta: feed.meta, posts: processedPosts }
+  meta.identifier = createFeedIdentifier(feedUrl, processedPosts)
+
+  return { meta, posts: processedPosts }
 }
 
 const createFeedStream = async feedUrl => {
@@ -30,6 +34,39 @@ const createFeedStream = async feedUrl => {
       feedUrl,
     })
   }
+}
+
+/**
+ * Try to create a unique feed identifier. This is most used
+ * the first time a feed is added to the system, to see if
+ * the feed was already added under a different URL. The feed
+ * url is used in the ID as well as the identifiers of the first
+ * 5 posts in the feed. Every time the feed updates via the
+ * daemon, this identifier is updated too.
+ *
+ * @param feedUrl {string} - the url of the feed
+ * @param posts {array} - an array of processed feed posts. these
+ * must be provided after the identifier of each post
+ * has been created.
+ * @returns {string} - an MD5 has used as an identifier
+ */
+const createFeedIdentifier = (feedUrl, posts) => {
+  // parse the url
+  const parsedUrl = url.parse(feedUrl)
+  let id = `${parsedUrl.hostname}:${parsedUrl.pathname}`
+
+  // if there are posts, add
+  // the identifier of the first
+  // 5 posts.
+  if (posts && posts.length) {
+    posts.slice(0, 5).forEach(post => {
+      id += `:${post.identifier}`
+    })
+  }
+  return crypto
+    .createHash('md5')
+    .update(id)
+    .digest('hex')
 }
 
 const determineFeedType = posts => {
@@ -52,6 +89,7 @@ const determineFeedType = posts => {
 }
 
 const readFeedStream = (stream, feedUrl) => {
+  let feedType = ''
   const feed = {
     meta: null,
     posts: [],
@@ -68,10 +106,22 @@ const readFeedStream = (stream, feedUrl) => {
         return reject(error)
       })
       .on('end', () => {
-        const feedType = determineFeedType(feed.posts)
-        feed.meta.feedType = feedType
-        feed.posts = feed.posts.map(post => (post.postType = feedType))
-        return resolve(feed)
+        feedType = determineFeedType(feed.posts)
+        const results = {}
+
+        results.meta = {
+          ...feed.meta,
+          feedType,
+        }
+
+        results.posts = feed.posts.map(function(post) {
+          return {
+            ...post,
+            postType: feedType,
+          }
+        })
+
+        return resolve(results)
       })
       .on('readable', function() {
         const streamFeed = this

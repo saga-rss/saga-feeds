@@ -9,6 +9,7 @@ const validContentTypes = [
   'application/rdf+xml',
   'application/rss',
   'application/atom',
+  'application/rss+xml;charset=UTF-8',
 ]
 
 const discoverFeeds = async url => {
