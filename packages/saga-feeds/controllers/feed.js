@@ -49,7 +49,6 @@ const createFeed = wrapAsync(async (req, res, next) => {
 
     if (posts.length) {
       await Promise.map(posts, post => {
-        console.log(post)
         return Post.findOneAndUpdate(
           { identifier: post.identifier },
           {

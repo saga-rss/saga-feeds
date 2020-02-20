@@ -3,6 +3,7 @@ const Schema = mongoose.Schema
 const mongooseStringQuery = require('mongoose-string-query')
 const autopopulate = require('mongoose-autopopulate')
 const mongooseDelete = require('mongoose-delete')
+const sanitizeHtml = require('sanitize-html')
 
 const MediaSchema = new Schema({
   url: {
@@ -73,6 +74,10 @@ const schema = new Schema(
       trim: true,
       default: '',
     },
+    direction: {
+      type: String,
+      trim: true,
+    },
     enclosures: [MediaSchema],
     favoriteCount: {
       type: Number,
@@ -81,7 +86,9 @@ const schema = new Schema(
     feed: {
       type: Schema.Types.ObjectId,
       ref: 'Feed',
-      autopopulate: true,
+      autopopulate: {
+        select: ['_id', 'images', 'title', 'publisher'],
+      },
       required: true,
       index: true,
     },
@@ -110,10 +117,6 @@ const schema = new Schema(
       type: [String],
       index: true,
     },
-    link: {
-      type: String,
-      trim: true,
-    },
     postType: {
       type: String,
       enum: ['article', 'audio', 'video'],
@@ -139,6 +142,10 @@ const schema = new Schema(
       required: true,
       index: { type: 'hashed' },
     },
+    wordCount: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     collection: 'post',
@@ -152,7 +159,6 @@ schema.methods.detailView = function detailView() {
     'postType',
     'title',
     'url',
-    'feedUrl',
     'favoriteCount',
     'summary',
     'description',
@@ -161,10 +167,11 @@ schema.methods.detailView = function detailView() {
     'enclosures',
     'publishedDate',
     'commentUrl',
-    'tags',
     'identifier',
     'interests',
     'author',
+    'wordCount',
+    'direction',
   ]
   fields.forEach(field => {
     transformed[field] = this[field]
@@ -177,7 +184,7 @@ schema.statics.updateByIdentifier = async function updateByIdentifier(identifier
 }
 
 schema.statics.updateFavoriteCount = async function updateFavoriteCount(id, amount) {
-  await this.findOneAndUpdate({ _id: id }, { $inc: { favoriteCount: amount } }).exec()
+  await this.findOneAndUpdate({ _id: id }, { $inc: { favoriteCount: amount } })
 }
 
 schema.plugin(mongooseStringQuery)

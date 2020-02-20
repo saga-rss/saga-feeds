@@ -1,4 +1,3 @@
-const sanitizeHtml = require('sanitize-html')
 const strip = require('strip')
 const entities = require('entities')
 const crypto = require('crypto')
@@ -44,14 +43,13 @@ const normalizePost = async post => {
 
   const processed = {
     postType: post.postType,
-    content: sanitizeHtml(post.summary),
-    description: postMeta.description || strip(entities.decodeHTML(post.description)),
+    summary: postMeta.description,
+    description: strip(entities.decodeHTML(post.summary || post.description || '')),
     enclosures: processEnclosures(post.enclosures),
     guid: post.guid,
-    link: post.link,
     publishedDate: post.pubdate || post.pubDate,
     title: post.title,
-    url: post.link,
+    url: post.link ? normalizeUrl(post.link) : '',
     commentUrl: post.comments,
     images: {
       featured: postMeta.image ? postMeta.image : post.image ? post.image.url : '',
