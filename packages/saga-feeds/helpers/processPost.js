@@ -46,7 +46,7 @@ const normalizePost = async post => {
 
   const processed = {
     postType: post.postType,
-    summary: postMeta.description,
+    summary: postMeta ? postMeta.description : '',
     description: strip(entities.decodeHTML(post.summary || post.description || '')),
     enclosures: processEnclosures(post.enclosures),
     guid: post.guid,
@@ -55,12 +55,12 @@ const normalizePost = async post => {
     url: post.link ? normalizeUrl(post.link) : '',
     commentUrl: post.comments,
     images: {
-      featured: postMeta.image ? postMeta.image : post.image ? post.image.url : '',
-      logo: postMeta.logo || '',
+      featured: postMeta && postMeta.image ? postMeta.image : post.image ? post.image.url : '',
+      logo: postMeta ? postMeta.logo : '',
     },
     identifier: createPostIdentifier(post.guid, post.link, post.enclosures),
     interests: [],
-    author: postMeta.author || '',
+    author: postMeta ? postMeta.author : '',
   }
 
   if (post.categories) {
@@ -299,6 +299,10 @@ const updatePostMeta = async (id, url, forceUpdate = false) => {
   })
 
   const meta = await processMeta(url, true)
+
+  if (!meta) {
+    return post
+  }
 
   const updates = {
     summary: meta.description,

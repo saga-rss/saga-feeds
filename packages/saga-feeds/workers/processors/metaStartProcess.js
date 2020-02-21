@@ -25,12 +25,14 @@ module.exports = async (job, done) => {
   try {
     const results = await processMeta(data.url, data.shouldUpdate)
 
-    await MetaEndQueueAdd({
-      type: 'Meta',
-      feedId: data.feedId,
-      url: data.url,
-      results,
-    })
+    if (results) {
+      await MetaEndQueueAdd({
+        type: 'Meta',
+        feedId: data.feedId,
+        url: data.url,
+        results,
+      })
+    }
 
     return done(null, results)
   } catch (error) {

@@ -16,13 +16,27 @@ const logger = require('./logger').getLogger()
 const processMeta = async (targetUrl, shouldUpdate) => {
   if (!shouldUpdate) return false
 
-  const { body: html, url } = await got(targetUrl)
-  const results = await metascraper({ html, url })
+  let results = null
 
-  logger.debug(`Processed meta for url`, {
-    targetUrl,
-    results,
-  })
+  try {
+    const { body: html, url } = await got(targetUrl)
+    results = await metascraper({ html, url })
+
+    logger.debug(`Processed meta for url`, {
+      targetUrl,
+      results,
+    })
+  } catch (ex) {
+    // this could happen if the request 404'd, or
+    // some other server error happened.
+    logger.warn(`Problem while fetching meta for url`, {
+      targetUrl,
+      error: {
+        message: ex.message,
+        stack: ex.stack,
+      },
+    })
+  }
 
   return results
 }
