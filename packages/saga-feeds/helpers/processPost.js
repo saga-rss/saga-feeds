@@ -251,12 +251,24 @@ const getArticleContent = url => {
     headers: {
       'user-agent': config.userAgent,
     },
-  }).then(results => ({
-    ...results,
-    lead_image_url: results.url ? normalizeUrl(results.url) : results.url,
-    url: results.url ? normalizeUrl(results.url) : results.url,
-    content: results.content ? sanitizeHtml(results.content) : results.content,
-  }))
+  })
+    .then(results => ({
+      ...results,
+      lead_image_url: results.url ? normalizeUrl(results.url) : results.url,
+      url: results.url ? normalizeUrl(results.url) : results.url,
+      content: results.content ? sanitizeHtml(results.content) : results.content,
+    }))
+    .catch(error => {
+      logger.warn(`Problem while trying to get article content`, {
+        url,
+        error: {
+          message: error.message,
+          stack: error.stack,
+        },
+      })
+
+      return null
+    })
 }
 
 const updatePostContent = async (id, url, forceUpdate = false) => {
@@ -272,6 +284,10 @@ const updatePostContent = async (id, url, forceUpdate = false) => {
   })
 
   const parsed = await getArticleContent(url)
+
+  if (!parsed) {
+    return post
+  }
 
   return Post.findOneAndUpdate(
     { _id: id },
