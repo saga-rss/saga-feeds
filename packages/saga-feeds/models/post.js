@@ -87,7 +87,7 @@ const schema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'Feed',
       autopopulate: {
-        select: ['_id', 'images', 'title', 'publisher'],
+        select: ['_id', 'images', 'title', 'publisher', 'copyright'],
       },
       required: true,
       index: true,

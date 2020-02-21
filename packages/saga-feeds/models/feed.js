@@ -13,6 +13,11 @@ const schema = new Schema(
       type: String,
       trim: true,
     },
+    copyright: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     description: {
       type: String,
       trim: true,
@@ -174,6 +179,7 @@ schema.methods.detailView = function detailView() {
     'scrapeFailureCount',
     'interests',
     'identifier',
+    'copyright',
   ]
   fields.forEach(field => {
     transformed[field] = this[field]

@@ -141,6 +141,7 @@ const readFeedStream = (stream, feedUrl) => {
           updatedDate: this.meta.date,
           lastScrapedDate: new Date().toISOString(),
           feedStaleDate: formatISO(addHours(new Date(), 1)),
+          copyright: this.meta.copyright || '',
         }
         let item
         while ((item = streamFeed.read())) {

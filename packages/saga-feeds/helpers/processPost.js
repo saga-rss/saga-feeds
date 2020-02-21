@@ -216,10 +216,11 @@ const processEnclosures = enclosures => {
 }
 
 /**
- * Ensure that each enclosure is unique
+ * Ensure that each enclosure is unique. Also, sort by size,
+ * so that the largest one is first.
  *
  * @param enclosures {array} - list of enclosures on the RSS item
- * @returns {[]|*}
+ * @returns {array} - filtered and sorted enclosures
  */
 const filterEnclosures = enclosures => {
   if (!enclosures || !Array.isArray(enclosures) || !enclosures.length) {
@@ -238,7 +239,11 @@ const filterEnclosures = enclosures => {
     }
   })
 
-  return filtered
+  const sorted = filtered.sort((a, b) => {
+    return parseInt(b.length || 0) - parseInt(a.length || 0)
+  })
+
+  return sorted
 }
 
 const getArticleContent = url => {
