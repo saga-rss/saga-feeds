@@ -14,7 +14,17 @@ const validContentTypes = [
 
 const discoverFeeds = async url => {
   const discoveryResults = await rssFinder(url)
-  const feedResults = await got.get(url)
+  const feedResults = await got.get(url).catch(ex => {
+    logger.warn(`Problem while discovering feeds`, {
+      feedUrl: url,
+      error: {
+        message: ex.message,
+        stack: ex.stack,
+      },
+    })
+
+    return null
+  })
 
   const contentType = feedResults.headers['content-type']
   if (contentType && validContentTypes.indexOf(contentType) >= 0) {
