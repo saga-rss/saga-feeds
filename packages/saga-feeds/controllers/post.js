@@ -1,6 +1,6 @@
 const { wrapAsync } = require('./utils')
 const Post = require('../models/post')
-const { getArticleContent } = require('../helpers/getArticleContent')
+const { updatePostContent, updatePostMeta } = require('../helpers/processPost')
 
 const getPost = wrapAsync(async (req, res, next) => {
   const postId = req.params.postId
@@ -12,22 +12,10 @@ const getPost = wrapAsync(async (req, res, next) => {
   }
 
   if (post.url) {
-    const parsed = await getArticleContent(post.url)
-
-    await Post.update(
-      { _id: post._id },
-      {
-        content: parsed.content,
-        direction: parsed.direction,
-        wordCount: parsed.word_count,
-        images: {
-          featured: parsed.lead_image_url,
-        },
-      },
-      {
-        new: true,
-      },
-    )
+    const forceUpdate = !post.content || post.content.length < 0
+    await updatePostContent(post._id, post.url, forceUpdate)
+    await updatePostMeta(post._id, post.url, forceUpdate)
+    await Post.setStaleDate(post._id)
 
     post = await Post.findOne({ _id: post._id })
   }

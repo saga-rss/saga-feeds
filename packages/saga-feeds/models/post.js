@@ -3,7 +3,7 @@ const Schema = mongoose.Schema
 const mongooseStringQuery = require('mongoose-string-query')
 const autopopulate = require('mongoose-autopopulate')
 const mongooseDelete = require('mongoose-delete')
-const sanitizeHtml = require('sanitize-html')
+const { formatISO, addHours, subSeconds, isAfter } = require('date-fns')
 
 const MediaSchema = new Schema({
   url: {
@@ -117,6 +117,9 @@ const schema = new Schema(
       type: [String],
       index: true,
     },
+    postStaleDate: {
+      type: Date,
+    },
     postType: {
       type: String,
       enum: ['article', 'audio', 'video'],
@@ -172,6 +175,8 @@ schema.methods.detailView = function detailView() {
     'author',
     'wordCount',
     'direction',
+    'feed',
+    'postStaleDate',
   ]
   fields.forEach(field => {
     transformed[field] = this[field]
@@ -179,12 +184,26 @@ schema.methods.detailView = function detailView() {
   return transformed
 }
 
+schema.methods.postNeedsUpdating = function postNeedsUpdating() {
+  if (!this.postStaleDate) return true
+
+  const thirtySecondsAgo = subSeconds(new Date(), 30)
+
+  const feedStale = isAfter(thirtySecondsAgo, new Date(this.postStaleDate))
+
+  return feedStale
+}
+
+schema.statics.setStaleDate = async function setStaleDate(id) {
+  return this.findOneAndUpdate({ _id: id }, { postStaleDate: formatISO(addHours(new Date(), 24)) }, { new: true })
+}
+
 schema.statics.updateByIdentifier = async function updateByIdentifier(identifier, post) {
   return this.findOneAndUpdate({ identifier: post.identifier }, post, { new: true, upsert: true })
 }
 
 schema.statics.updateFavoriteCount = async function updateFavoriteCount(id, amount) {
-  await this.findOneAndUpdate({ _id: id }, { $inc: { favoriteCount: amount } })
+  await this.findOneAndUpdate({ _id: id }, { $inc: { favoriteCount: amount } }, { new: true })
 }
 
 schema.plugin(mongooseStringQuery)

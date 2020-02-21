@@ -6,7 +6,6 @@ const { wrapAsync } = require('./utils')
 const { discoverFeeds } = require('../helpers/discovery')
 const Feed = require('../models/feed')
 const Post = require('../models/post')
-const { FeedStartQueueAdd, MetaStartQueueAdd } = require('../workers/queues')
 const { processFeed } = require('../helpers/processFeed')
 
 const listFeeds = wrapAsync(async (req, res, next) => {

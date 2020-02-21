@@ -187,7 +187,7 @@ schema.methods.feedNeedsUpdating = function feedNeedsUpdating(feedHeaders) {
   const feedStale = isAfter(thirtySecondsAgo, new Date(this.feedStaleDate))
 
   const lastModifiedDate = feedHeaders['last-modified'] || new Date()
-  const feedModified = isAfter(new Date(), new Date(lastModifiedDate))
+  const feedModified = isAfter(thirtySecondsAgo, new Date(lastModifiedDate))
 
   return feedStale || feedModified
 }

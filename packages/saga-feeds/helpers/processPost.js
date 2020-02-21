@@ -2,7 +2,10 @@ const strip = require('strip')
 const entities = require('entities')
 const crypto = require('crypto')
 const normalizeUrl = require('normalize-url')
+const Mercury = require('@postlight/mercury-parser')
+const sanitizeHtml = require('sanitize-html')
 
+const config = require('../config')
 const logger = require('./logger').getLogger()
 const { processMeta } = require('./processMeta')
 const Post = require('../models/Post')
@@ -238,7 +241,79 @@ const filterEnclosures = enclosures => {
   return filtered
 }
 
+const getArticleContent = url => {
+  return Mercury.parse(url, {
+    headers: {
+      'user-agent': config.userAgent,
+    },
+  }).then(results => ({
+    ...results,
+    lead_image_url: results.url ? normalizeUrl(results.url) : results.url,
+    url: results.url ? normalizeUrl(results.url) : results.url,
+    content: results.content ? sanitizeHtml(results.content) : results.content,
+  }))
+}
+
+const updatePostContent = async (id, url, forceUpdate = false) => {
+  const post = await Post.findById(id)
+
+  if (!forceUpdate && (!post || !post.postNeedsUpdating())) {
+    return post
+  }
+
+  logger.debug(`this post content is stale and needs updating`, {
+    id: post._id,
+    url: post.url,
+  })
+
+  const parsed = await getArticleContent(url)
+
+  return Post.findOneAndUpdate(
+    { _id: id },
+    {
+      content: parsed.content,
+      direction: parsed.direction,
+      wordCount: parsed.word_count,
+    },
+    {
+      new: true,
+    },
+  )
+}
+
+const updatePostMeta = async (id, url, forceUpdate = false) => {
+  const post = await Post.findById(id)
+
+  if (!forceUpdate && (!post || !post.postNeedsUpdating())) {
+    return post
+  }
+
+  logger.debug(`this post meta is stale and needs updating`, {
+    id: post._id,
+    url: post.url,
+  })
+
+  const meta = await processMeta(url, true)
+
+  const updates = {
+    summary: meta.description,
+  }
+
+  if (meta.image) {
+    updates.images = {
+      featured: meta.image,
+    }
+  }
+
+  if (meta.author) {
+    updates.author = meta.author
+  }
+
+  return Post.findOneAndUpdate({ _id: id }, updates, { new: true })
+}
+
 module.exports = {
   processPost,
-  createPostIdentifier,
+  updatePostContent,
+  updatePostMeta,
 }
