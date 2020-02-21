@@ -7,7 +7,7 @@ const JOB_TYPE_FEED = 'feed'
 const JOB_TYPE_META = 'meta'
 
 const refreshFeeds = async (forceUpdate = false, jobType = JOB_TYPE_FEED) => {
-  return Feed.find()
+  return Feed.find({ isPublic: true, deleted: false })
     .sort({ lastScrapedDate: 'asc' })
     .cursor()
     .eachAsync(async doc => {
@@ -30,7 +30,7 @@ const refreshFeeds = async (forceUpdate = false, jobType = JOB_TYPE_FEED) => {
 
         if (error.response && error.response.statusCode === 404) {
           // this feed doesn't exist
-          await doc.delete()
+          await Feed.setPublic(doc._id, false)
         }
 
         return Promise.resolve()

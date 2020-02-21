@@ -13,6 +13,11 @@ const processFeed = async (feedUrl, shouldUpdate) => {
   if (!shouldUpdate) return false
 
   const stream = await createFeedStream(feedUrl)
+
+  if (!stream) {
+    return null
+  }
+
   const { meta, posts } = await readFeedStream(stream, feedUrl)
 
   const processedPosts = await Promise.map(posts, post => {
@@ -33,6 +38,7 @@ const createFeedStream = async feedUrl => {
       error,
       feedUrl,
     })
+    return null
   }
 }
 

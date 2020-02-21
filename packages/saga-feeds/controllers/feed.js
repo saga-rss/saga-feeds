@@ -32,7 +32,13 @@ const createFeed = wrapAsync(async (req, res, next) => {
   }
 
   const results = await Promise.mapSeries(discovered.feedUrls, async feedUrl => {
-    const { meta, posts } = await processFeed(feedUrl.url, true)
+    const processed = await processFeed(feedUrl.url, true)
+
+    if (!processed) {
+      return {}
+    }
+
+    const { meta, posts } = processed
 
     const feedResponse = await Feed.findOneAndUpdate(
       { identifier: meta.identifier },

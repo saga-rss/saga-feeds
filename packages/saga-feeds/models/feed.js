@@ -198,6 +198,10 @@ schema.methods.feedNeedsUpdating = function feedNeedsUpdating(feedHeaders) {
   return feedStale || feedModified
 }
 
+schema.statics.setPublic = async function setPublic(id, isPublic) {
+  await this.findOneAndUpdate({ _id: id }, { isPublic }).exec()
+}
+
 schema.statics.addScrapeFailure = async function addScrapeFailure(id) {
   await this.findOneAndUpdate({ _id: id }, { $inc: { scrapeFailureCount: 1 } }).exec()
 }
