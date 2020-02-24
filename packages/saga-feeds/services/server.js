@@ -4,6 +4,7 @@ const logger = require('../helpers/logger').getLogger()
 const requestLogger = require('../helpers/requestLogger')
 const feedRoutes = require('../controllers/feed')
 const postRoutes = require('../controllers/post')
+const userRoutes = require('../controllers/user')
 
 const server = restify.createServer()
 
@@ -24,6 +25,11 @@ server.post({ name: 'createFeed', path: '/feeds' }, feedRoutes.createFeed)
 server.get({ name: 'getFeed', path: '/feeds/:feedId' }, feedRoutes.getFeed)
 
 server.get({ name: 'getPost', path: '/posts/:postId' }, postRoutes.getPost)
+
+server.get({ name: 'listUsers', path: '/users' }, userRoutes.listUsers)
+server.post({ name: 'createUser', path: '/users' }, userRoutes.createUser)
+server.get({ name: 'getUser', path: '/users/:userId' }, userRoutes.getUser)
+server.put({ name: 'updateUser', path: '/users/:userId' }, userRoutes.updateUser)
 
 const start = () => {
   server.listen(8081, function() {

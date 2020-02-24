@@ -6,6 +6,10 @@ module.exports = {
   appName: 'saga-feeds',
   userAgent: `${appInfo.name}/${appInfo.version} ${appInfo.author} ${appInfo.homepage}`,
   env: process.env.NODE_ENV,
+  jwt: {
+    secret: process.env.SAGA_JWT_SECRET,
+    issuer: process.env.SAGA_JWT_ISSUER,
+  },
   mongo: {
     uri: process.env.SAGA_MONGO_URI,
   },

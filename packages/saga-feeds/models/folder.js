@@ -4,6 +4,10 @@ import autopopulate from 'mongoose-autopopulate'
 
 const schema = new Schema(
   {
+    color: {
+      type: String,
+      trim: true,
+    },
     feed: [
       {
         type: Schema.Types.ObjectId,
@@ -27,4 +31,4 @@ const schema = new Schema(
 schema.plugin(mongooseStringQuery)
 schema.plugin(autopopulate)
 
-module.exports = mongoose.model('Folder', schema)
+module.exports = module.exports = mongoose.models.Folder || mongoose.model('Folder', schema)

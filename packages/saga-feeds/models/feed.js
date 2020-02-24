@@ -292,4 +292,4 @@ schema.plugin(mongooseDelete, {
   deletedAt: true,
 })
 
-module.exports = mongoose.model('Feed', schema)
+module.exports = mongoose.models.Feed || mongoose.model('Feed', schema)
