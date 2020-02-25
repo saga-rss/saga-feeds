@@ -3,6 +3,7 @@ const Schema = mongoose.Schema
 const mongooseBcrypt = require('mongoose-bcrypt')
 const mongooseStringQuery = require('mongoose-string-query')
 const mongooseDelete = require('mongoose-delete')
+const mongooseTimestamp = require('mongoose-timestamp')
 const jwt = require('jsonwebtoken')
 
 const config = require('../config')
@@ -28,7 +29,8 @@ const schema = new Schema(
       required: true,
     },
     interests: {
-      type: Schema.Types.Mixed,
+      type: [String],
+      index: true,
       default: [],
     },
     isActive: {
@@ -68,7 +70,6 @@ const schema = new Schema(
   },
   {
     collection: 'user',
-    timestamp: true,
   },
 )
 
@@ -78,6 +79,7 @@ schema.plugin(mongooseDelete, {
   overrideMethods: true,
   deletedAt: true,
 })
+schema.plugin(mongooseTimestamp)
 
 schema.index({ email: 1, username: 1 })
 

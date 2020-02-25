@@ -1,6 +1,8 @@
-import mongoose, { Schema } from 'mongoose'
-import mongooseStringQuery from 'mongoose-string-query'
-import autopopulate from 'mongoose-autopopulate'
+const mongoose = require('mongoose')
+const Schema = mongoose.Schema
+const mongooseStringQuery = require('mongoose-string-query')
+const mongooseAutopopulate = require('mongoose-autopopulate')
+const mongooseTimestamp = require('mongoose-timestamp')
 
 const schema = new Schema(
   {
@@ -24,11 +26,11 @@ const schema = new Schema(
   },
   {
     collection: 'folder',
-    timestamp: true,
   },
 )
 
 schema.plugin(mongooseStringQuery)
-schema.plugin(autopopulate)
+schema.plugin(mongooseAutopopulate)
+schema.plugin(mongooseTimestamp)
 
 module.exports = module.exports = mongoose.models.Folder || mongoose.model('Folder', schema)

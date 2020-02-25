@@ -36,6 +36,8 @@ FeedUpdaterDaemon.prototype.updateFeeds = function updateFeed() {
     return false
   }
 
+  logger.info('feeds are updating now')
+
   refreshFeeds(this.forcedUpdate, JOB_TYPE_FEED).then(() => {
     this.goToSleep(this.updateFeeds)
   })
@@ -54,7 +56,7 @@ FeedUpdaterDaemon.prototype.start = function start() {
   if (STANDALONE) {
     return mongoose
       .start()
-      .then(() => this.updateFeeds())
+      .then(() => this.goToSleep(this.updateFeeds))
       .catch(error => {
         logger.error(error.message, { error })
         process.exit(1)

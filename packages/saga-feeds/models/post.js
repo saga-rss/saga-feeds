@@ -1,8 +1,9 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const mongooseStringQuery = require('mongoose-string-query')
-const autopopulate = require('mongoose-autopopulate')
+const mongooseAutopopulate = require('mongoose-autopopulate')
 const mongooseDelete = require('mongoose-delete')
+const mongooseTimestamp = require('mongoose-timestamp')
 const { formatISO, addHours, subSeconds, isAfter } = require('date-fns')
 
 const MediaSchema = new Schema({
@@ -116,6 +117,7 @@ const schema = new Schema(
     interests: {
       type: [String],
       index: true,
+      default: [],
     },
     postStaleDate: {
       type: Date,
@@ -152,7 +154,6 @@ const schema = new Schema(
   },
   {
     collection: 'post',
-    timestamp: true,
   },
 )
 
@@ -207,11 +208,12 @@ schema.statics.updateFavoriteCount = async function updateFavoriteCount(id, amou
 }
 
 schema.plugin(mongooseStringQuery)
-schema.plugin(autopopulate)
+schema.plugin(mongooseAutopopulate)
 schema.plugin(mongooseDelete, {
   overrideMethods: true,
   deletedAt: true,
 })
+schema.plugin(mongooseTimestamp)
 
 schema.index({ rss: 1, publishedDate: -1 })
 schema.index({ publishedDate: -1 })

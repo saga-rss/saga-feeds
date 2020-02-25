@@ -30,6 +30,7 @@ const discoverFeeds = async url => {
   if (contentType && validContentTypes.indexOf(contentType) >= 0) {
     discoveryResults.feedUrls = [
       {
+        ...discoveryResults.feedUrls[0],
         url,
       },
     ]

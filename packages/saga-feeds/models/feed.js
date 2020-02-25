@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const mongooseStringQuery = require('mongoose-string-query')
 const mongooseDelete = require('mongoose-delete')
+const mongooseTimestamp = require('mongoose-timestamp')
 const normalizeUrl = require('normalize-url')
 const entities = require('entities')
 const { formatISO, addHours, subSeconds, isAfter } = require('date-fns')
@@ -96,6 +97,7 @@ const schema = new Schema(
     interests: {
       type: [String],
       index: true,
+      default: [],
     },
     language: {
       type: String,
@@ -148,7 +150,6 @@ const schema = new Schema(
   },
   {
     collection: 'feed',
-    timestamp: true,
   },
 )
 
@@ -171,12 +172,7 @@ schema.methods.detailView = function detailView() {
     'publishedDate',
     'isVisible',
     'isPublic',
-    'createdAt',
-    'updatedAt',
     'updatedDate',
-    'feedStaleDate',
-    'metaStaleDate',
-    'scrapeFailureCount',
     'interests',
     'identifier',
     'copyright',
@@ -195,7 +191,7 @@ schema.methods.feedNeedsUpdating = function feedNeedsUpdating(feedHeaders) {
   const lastModifiedDate = feedHeaders['last-modified'] || new Date()
   const feedModified = isAfter(thirtySecondsAgo, new Date(lastModifiedDate))
 
-  return feedStale || feedModified
+  return (feedStale && feedModified) || (feedStale && !feedModified)
 }
 
 schema.statics.setPublic = async function setPublic(id, isPublic) {
@@ -291,5 +287,6 @@ schema.plugin(mongooseDelete, {
   overrideMethods: true,
   deletedAt: true,
 })
+schema.plugin(mongooseTimestamp)
 
 module.exports = mongoose.models.Feed || mongoose.model('Feed', schema)

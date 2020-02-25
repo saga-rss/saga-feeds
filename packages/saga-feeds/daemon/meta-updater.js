@@ -36,6 +36,8 @@ MetaUpdaterDaemon.prototype.updateFeedsMeta = function updateFeed() {
     return false
   }
 
+  logger.info('meta are updating now')
+
   refreshFeeds(this.forcedUpdate, JOB_TYPE_META).then(() => {
     this.goToSleep(this.updateFeedsMeta)
   })
@@ -54,9 +56,7 @@ MetaUpdaterDaemon.prototype.start = function start() {
   if (STANDALONE) {
     return mongoose
       .start()
-      .then(() => {
-        this.updateFeedsMeta()
-      })
+      .then(() => this.goToSleep(this.updateFeedsMeta))
       .catch(error => {
         logger.error(error.message, { error })
         process.exit(1)

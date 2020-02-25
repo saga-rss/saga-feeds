@@ -9,11 +9,13 @@ module.exports = {
       name: 'saga-feed-updater',
       script: './daemon/feed-updater.js',
       watch: true,
+      args: '-v',
     },
     {
       name: 'saga-meta-updater',
       script: './daemon/meta-updater.js',
       watch: true,
+      args: '-v',
     },
   ],
 }

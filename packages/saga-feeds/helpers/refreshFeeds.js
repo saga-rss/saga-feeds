@@ -7,7 +7,7 @@ const JOB_TYPE_FEED = 'feed'
 const JOB_TYPE_META = 'meta'
 
 const refreshFeeds = async (forceUpdate = false, jobType = JOB_TYPE_FEED) => {
-  return Feed.find({ isPublic: true, deleted: false })
+  return Feed.find({ isPublic: true })
     .sort({ lastScrapedDate: 'asc' })
     .cursor()
     .eachAsync(async doc => {

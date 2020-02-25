@@ -286,6 +286,7 @@ const updatePostContent = async (id, url, forceUpdate = false) => {
   const parsed = await getArticleContent(url)
 
   if (!parsed) {
+    // @TODO: the post might be gone, update the model to reflect this status
     return post
   }
 
@@ -317,6 +318,7 @@ const updatePostMeta = async (id, url, forceUpdate = false) => {
   const meta = await processMeta(url, true)
 
   if (!meta) {
+    // @TODO: the post might be gone, update the model to reflect this status
     return post
   }
 
