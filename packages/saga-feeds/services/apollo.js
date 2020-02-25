@@ -7,9 +7,10 @@ const { typeDefs, resolvers } = require('../schema')
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: {
+  context: ({ req }) => ({
     models,
-  },
+    user: req.user,
+  }),
   formatError: error => {
     logger.error(`Apollo Error: ${error.message}`, { error })
     return error

@@ -63,8 +63,13 @@ const userSearch = async (source, { id }, context) => {
   return users
 }
 
+const userToken = async (source, args, context) => {
+  return source.getToken()
+}
+
 module.exports = {
   userById,
   userCreate,
   userSearch,
+  userToken,
 }

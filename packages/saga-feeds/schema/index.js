@@ -4,7 +4,7 @@ const { GraphQLDateTime, GraphQLDate } = require('graphql-iso-date')
 
 const { feedById, feedCreate, feedSearch } = require('./feed')
 const { postById, postContent } = require('./post')
-const { userById, userCreate, userSearch } = require('./user')
+const { userById, userCreate, userSearch, userToken } = require('./user')
 
 const typeDefs = gql`
   scalar MongoID
@@ -146,6 +146,9 @@ const resolvers = {
   },
   Post: {
     content: postContent,
+  },
+  User: {
+    token: userToken,
   },
 }
 
