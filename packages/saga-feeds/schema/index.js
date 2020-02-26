@@ -4,7 +4,7 @@ const { GraphQLDateTime, GraphQLDate } = require('graphql-iso-date')
 
 const { feedById, feedCreate, feedSearch } = require('./feed')
 const { postById, postContent } = require('./post')
-const { userById, userCreate, userSearch, userToken } = require('./user')
+const { userById, userCreate, userLogin, userSearch, userToken } = require('./user')
 
 const typeDefs = gql`
   scalar MongoID
@@ -30,13 +30,14 @@ const typeDefs = gql`
     feedSearch(sort: Sort): [Feed]
     postById(id: MongoID!): Post
     userById(id: MongoID!): User
+    userLogin(email: String!, password: String): User
     userSearch(sort: Sort): [User]
   }
 
   type Mutation {
     feedCreate(feedUrl: String!): [Feed]
     feedSubscribe: Feed
-    userCreate: User
+    userCreate(displayName: String!, email: String!, password: String!, username: String!): User
     userUpdate: User
   }
 
@@ -121,7 +122,7 @@ const typeDefs = gql`
     interests: [String]
     isActive: Boolean
     isAdmin: Boolean
-    userName: String
+    username: String
     url: String
     token: String
   }
@@ -136,6 +137,7 @@ const resolvers = {
     feedSearch,
     postById,
     userById,
+    userLogin,
     userSearch,
   },
   Mutation: {

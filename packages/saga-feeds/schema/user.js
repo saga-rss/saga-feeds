@@ -1,6 +1,24 @@
 const validator = require('validator')
 const { UserInputError, ApolloError } = require('apollo-server-express')
 
+const validateEmail = email => {
+  if (!email || !validator.isEmail(email)) {
+    throw new UserInputError('bad email', {
+      email,
+    })
+  }
+  return true
+}
+
+const validateUsername = username => {
+  if (!username || !validator.matches(username, /^[\w-]+$/)) {
+    throw new UserInputError('bad username', {
+      username,
+    })
+  }
+  return true
+}
+
 const userById = async (source, { id }, context) => {
   let user = await context.models.user.findById(id)
 
@@ -21,18 +39,10 @@ const userCreate = async (source, { displayName, email, password, username }, co
   }
 
   // validate provided email address
-  if (!validator.isEmail(newUser.email)) {
-    throw new UserInputError('bad email', {
-      email: newUser.email,
-    })
-  }
+  validateEmail(newUser.email)
 
   // validate provided username
-  if (!validator.matches(newUser.username, /^[\w-]+$/)) {
-    throw new UserInputError('bad username', {
-      username: newUser.username,
-    })
-  }
+  validateUsername(newUser.username)
 
   const exists = await context.models.user.findOne({
     $or: [{ normalizedEmail: newUser.normalizedEmail }, { username: newUser.username }],
@@ -40,8 +50,8 @@ const userCreate = async (source, { displayName, email, password, username }, co
 
   if (exists) {
     throw new UserInputError('already exists', {
-      email: newUser.email,
-      username: newUser.username,
+      email: newUser.normalizedEmail === exists.normalizedEmail,
+      username: newUser.username === exists.username,
     })
   }
 
@@ -64,12 +74,31 @@ const userSearch = async (source, { id }, context) => {
 }
 
 const userToken = async (source, args, context) => {
-  return source.getToken()
+  if (source instanceof context.models.user && context.user && context.user.sub === source.id) {
+    return source.getToken()
+  }
+  return ''
+}
+
+const userLogin = async (source, { email, password }, context) => {
+  const normalizedEmail = validator.normalizeEmail(email.trim())
+  const user = await context.models.user.findOne({ normalizedEmail })
+
+  if (!user) {
+    throw new ApolloError('user not found', 'NOT_FOUND')
+  }
+
+  if (!(await user.verifyPassword(password))) {
+    throw new UserInputError('invalid password')
+  }
+
+  return user
 }
 
 module.exports = {
   userById,
   userCreate,
+  userLogin,
   userSearch,
   userToken,
 }
