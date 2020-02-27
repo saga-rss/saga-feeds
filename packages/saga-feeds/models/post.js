@@ -4,7 +4,7 @@ const mongooseStringQuery = require('mongoose-string-query')
 const mongooseAutopopulate = require('mongoose-autopopulate')
 const mongooseDelete = require('mongoose-delete')
 const mongooseTimestamp = require('mongoose-timestamp')
-const { formatISO, addHours, subSeconds, isAfter } = require('date-fns')
+const { formatISO, addHours, subHours, subSeconds, isAfter } = require('date-fns')
 
 const MediaSchema = new Schema({
   url: {
@@ -188,11 +188,12 @@ schema.methods.detailView = function detailView() {
 schema.methods.postNeedsUpdating = function postNeedsUpdating() {
   if (!this.postStaleDate) return true
 
-  const thirtySecondsAgo = subSeconds(new Date(), 30)
+  const postModifiedLimit = subHours(new Date(), 24)
 
-  const feedStale = isAfter(thirtySecondsAgo, new Date(this.postStaleDate))
+  // the post is stale if it is older than 24 hours
+  const isPostStale = isAfter(postModifiedLimit, this.postStaleDate)
 
-  return feedStale
+  return isPostStale
 }
 
 schema.statics.setStaleDate = async function setStaleDate(id) {

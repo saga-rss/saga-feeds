@@ -33,4 +33,4 @@ schema.plugin(mongooseStringQuery)
 schema.plugin(mongooseAutopopulate)
 schema.plugin(mongooseTimestamp)
 
-module.exports = module.exports = mongoose.models.Folder || mongoose.model('Folder', schema)
+module.exports = mongoose.models.Folder || mongoose.model('Folder', schema)

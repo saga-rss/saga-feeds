@@ -26,6 +26,8 @@ const start = () => {
     keepAlive: 1,
     useNewUrlParser: true,
     useFindAndModify: false,
+    useCreateIndex: true,
+    useUnifiedTopology: true,
   })
 }
 

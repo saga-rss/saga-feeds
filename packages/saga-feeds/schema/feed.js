@@ -75,6 +75,14 @@ const feedCreate = async (source, { feedUrl }, context) => {
   return feeds
 }
 
+const feedPosts = async (source, args, context) => {
+  if (source instanceof context.models.feed) {
+    const posts = await context.models.post.find({ feed: source.id })
+    return posts
+  }
+  return null
+}
+
 const feedSearch = async (source, { id }, context) => {
   let feeds = []
 
@@ -91,5 +99,6 @@ const feedSearch = async (source, { id }, context) => {
 module.exports = {
   feedById,
   feedCreate,
+  feedPosts,
   feedSearch,
 }

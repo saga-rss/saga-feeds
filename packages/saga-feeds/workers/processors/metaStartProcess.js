@@ -17,6 +17,11 @@ module.exports = async (job, done) => {
     return done()
   }
 
+  if (!data.url) {
+    logger.warn('Unable to process a meta job without a URL', data)
+    return done()
+  }
+
   logger.debug('Starting a new meta job', {
     queue: job.queue.name,
     data,

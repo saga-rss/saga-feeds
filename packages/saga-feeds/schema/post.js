@@ -28,7 +28,18 @@ const postContent = async ({ id, url, content }, args, context) => {
   return freshContent
 }
 
+const postFeed = async (source, args, context) => {
+  let feed = null
+
+  if (source instanceof context.models.post) {
+    feed = await context.models.feed.findById(source.feed)
+  }
+
+  return feed
+}
+
 module.exports = {
   postById,
   postContent,
+  postFeed,
 }

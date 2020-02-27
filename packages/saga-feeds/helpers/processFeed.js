@@ -132,7 +132,7 @@ const readFeedStream = (stream, feedUrl) => {
       .on('readable', function() {
         const streamFeed = this
         feed.meta = {
-          url: normalizeUrl(this.meta.link),
+          url: this.meta.link ? normalizeUrl(this.meta.link) : '',
           language: this.meta.language,
           image: {
             featured: this.meta.image && this.meta.image.url ? this.meta.image.url : '',

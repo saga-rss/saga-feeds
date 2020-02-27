@@ -2,8 +2,8 @@ const { gql } = require('apollo-server-express')
 const GraphQLObjectId = require('graphql-scalar-objectid')
 const { GraphQLDateTime, GraphQLDate } = require('graphql-iso-date')
 
-const { feedById, feedCreate, feedSearch } = require('./feed')
-const { postById, postContent } = require('./post')
+const { feedById, feedCreate, feedPosts, feedSearch } = require('./feed')
+const { postById, postContent, postFeed } = require('./post')
 const { userById, userCreate, userLogin, userSearch, userToken } = require('./user')
 
 const typeDefs = gql`
@@ -146,8 +146,12 @@ const resolvers = {
     userCreate,
     userUpdate: () => {},
   },
+  Feed: {
+    posts: feedPosts,
+  },
   Post: {
     content: postContent,
+    feed: postFeed,
   },
   User: {
     token: userToken,

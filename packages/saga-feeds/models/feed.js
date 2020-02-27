@@ -184,14 +184,17 @@ schema.methods.detailView = function detailView() {
 }
 
 schema.methods.feedNeedsUpdating = function feedNeedsUpdating(feedHeaders) {
+  if (!this.feedStaleDate) return true
+
   const thirtySecondsAgo = subSeconds(new Date(), 30)
 
-  const feedStale = isAfter(thirtySecondsAgo, new Date(this.feedStaleDate))
+  const lastModifiedDate = feedHeaders['last-modified']
+    ? new Date(feedHeaders['last-modified'])
+    : new Date(this.feedStaleDate)
 
-  const lastModifiedDate = feedHeaders['last-modified'] || new Date()
-  const feedModified = isAfter(thirtySecondsAgo, new Date(lastModifiedDate))
+  const isFeedStale = isAfter(thirtySecondsAgo, lastModifiedDate)
 
-  return (feedStale && feedModified) || (feedStale && !feedModified)
+  return isFeedStale
 }
 
 schema.statics.setPublic = async function setPublic(id, isPublic) {
@@ -208,6 +211,14 @@ schema.statics.updateFollowerCount = async function updateFollowerCount(id, amou
 
 schema.statics.updateFavoriteCount = async function updateFavoriteCount(id, amount) {
   await this.findOneAndUpdate({ _id: id }, { $inc: { favoriteCount: amount } }).exec()
+}
+
+schema.statics.updatePostCount = async function updatePostCount(id) {
+  const postCount = await mongoose
+    .model('Post')
+    .find({ feed: id })
+    .count()
+  await this.findOneAndUpdate({ _id: id }, { $inc: { postCount: postCount } }).exec()
 }
 
 schema.statics.updateFeedMeta = async function updateFeedMeta(feedId, meta) {
