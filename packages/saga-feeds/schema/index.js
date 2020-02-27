@@ -2,7 +2,7 @@ const { gql } = require('apollo-server-express')
 const GraphQLObjectId = require('graphql-scalar-objectid')
 const { GraphQLDateTime, GraphQLDate } = require('graphql-iso-date')
 
-const { feedById, feedCreate, feedPosts, feedSearch } = require('./feed')
+const { feedById, feedCreate, feedPosts, feedSearch, feedSubscribe, feedUnsubscribe } = require('./feed')
 const { postById, postContent, postFeed } = require('./post')
 const { userById, userCreate, userLogin, userSearch, userToken } = require('./user')
 
@@ -18,16 +18,21 @@ const typeDefs = gql`
   }
 
   enum Sort {
-    a_z
-    popularity
+    title
+    favoriteCount
+    postCount
     relevance
-    updated_date
-    z_a
+    updatedDate
+  }
+
+  enum SortDirection {
+    asc
+    desc
   }
 
   type Query {
     feedById(id: MongoID!): Feed
-    feedSearch(sort: Sort): [Feed]
+    feedSearch(sort: Sort, sortDirection: SortDirection): [Feed]
     postById(id: MongoID!): Post
     userById(id: MongoID!): User
     userLogin(email: String!, password: String): User
@@ -36,7 +41,8 @@ const typeDefs = gql`
 
   type Mutation {
     feedCreate(feedUrl: String!): [Feed]
-    feedSubscribe: Feed
+    feedSubscribe(feedId: MongoID!): Feed
+    feedUnsubscribe(feedId: MongoID!): Feed
     userCreate(displayName: String!, email: String!, password: String!, username: String!): User
     userUpdate: User
   }
@@ -55,19 +61,19 @@ const typeDefs = gql`
     favoriteCount: Int
     feedType: FeedType
     feedUrl: String!
-    followerCount: Int
     id: MongoID!
     identifier: String
+    interests: [String]
     images: FeedImage
     isFeatured: Boolean
     isPublic: Boolean
     isVisible: Boolean
     language: String
-    lastScrapedDate: DateTime
     posts: [Post]
     postCount: Int
     publishedDate: DateTime
     publisher: String
+    subscriptionCount: Int
     summary: String
     title: String
     updatedDate: DateTime
@@ -142,7 +148,8 @@ const resolvers = {
   },
   Mutation: {
     feedCreate,
-    feedSubscribe: () => {},
+    feedSubscribe,
+    feedUnsubscribe,
     userCreate,
     userUpdate: () => {},
   },

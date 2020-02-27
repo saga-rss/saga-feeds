@@ -49,10 +49,6 @@ const schema = new Schema(
       type: String,
       trim: true,
     },
-    followerCount: {
-      type: Number,
-      default: 0,
-    },
     identifier: {
       type: String,
       trim: true,
@@ -129,6 +125,10 @@ const schema = new Schema(
       type: Number,
       default: 0,
     },
+    subscriptionCount: {
+      type: Number,
+      default: 0,
+    },
     summary: {
       type: String,
       default: '',
@@ -162,7 +162,7 @@ schema.methods.detailView = function detailView() {
     'title',
     'url',
     'feedUrl',
-    'followerCount',
+    'subscriptionCount',
     'favoriteCount',
     'summary',
     'language',

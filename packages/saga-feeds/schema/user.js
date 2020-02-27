@@ -74,7 +74,7 @@ const userSearch = async (source, { id }, context) => {
 }
 
 const userToken = async (source, args, context) => {
-  if (source instanceof context.models.user && context.user && context.user.sub === source.id) {
+  if (source instanceof context.models.user && (!context.user || (context.user && context.user.sub === source.id))) {
     return source.getToken()
   }
   return ''

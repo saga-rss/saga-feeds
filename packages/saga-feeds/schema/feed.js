@@ -83,17 +83,21 @@ const feedPosts = async (source, args, context) => {
   return null
 }
 
-const feedSearch = async (source, { id }, context) => {
-  let feeds = []
-
-  if (id) {
-    const feed = await context.models.feed.findById(id)
-    feeds.push(feed)
-  } else {
-    feeds = await context.models.feed.find()
-  }
+const feedSearch = async (source, { sort = 'title', sortDirection = 'asc' }, context) => {
+  const feeds = await context.models.feed.find().sort({ [sort]: sortDirection })
 
   return feeds
+}
+
+const feedSubscribe = async (source, { feedId }, context) => {
+  await context.models.subscription.subscribe(feedId, context.user.sub)
+  const feed = await context.models.feed.findOne(feedId)
+  return feed
+}
+
+const feedUnsubscribe = async (source, { feedId }, context) => {
+  const subscription = await context.models.subscription.unsubscribe(feedId, context.user.sub)
+  return subscription
 }
 
 module.exports = {
@@ -101,4 +105,6 @@ module.exports = {
   feedCreate,
   feedPosts,
   feedSearch,
+  feedSubscribe,
+  feedUnsubscribe,
 }

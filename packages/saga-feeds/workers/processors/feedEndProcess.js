@@ -53,7 +53,7 @@ module.exports = async (job, done) => {
     }
 
     // update the feed post count
-    await updatedFeed.updatePostCount(updatedFeed._id)
+    await Feed.updatePostCount(updatedFeed._id)
 
     return done(null, {
       feed: updatedFeed,
