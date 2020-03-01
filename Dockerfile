@@ -11,12 +11,13 @@ USER node
 WORKDIR /opt/app
 
 COPY --chown=node:node package.json ./
+COPY --chown=node:node yarn.lock ./
 
 RUN yarn install
 
 COPY . .
 
-EXPOSE 8081
+EXPOSE 8080
 
 # Run process via pm2
 CMD ["pm2-runtime", "start", "ecosystem.config.js"]
