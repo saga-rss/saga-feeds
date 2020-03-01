@@ -5,12 +5,14 @@ services:
   saga_mongo:
     image: mongo:4.2.3
 
-#  saga_mongo_express:
-#    image: mongo-express
-#    restart: always
-#    ports:
-#      - ${SAGA_ME_PORT:-8086}:8081
-#    env_file: .env
+  saga_mongo_express:
+    image: mongo-express
+    ports:
+      - ${SAGA_ME_PORT:-8081}:8081
+    depends_on:
+      - saga_mongo
+    environment:
+      ME_CONFIG_MONGODB_SERVER: saga_mongo
 
   # Redis
   saga_redis:
@@ -32,7 +34,7 @@ services:
     build: .
     env_file: "etc/default/${ENV:-development}.env"
     ports:
-      - 8080:8080
+      - ${SAGA_SERVER_PORT:-8080}:8080
     depends_on:
       - saga_mongo
       - saga_redis
