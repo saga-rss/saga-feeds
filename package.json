@@ -2,11 +2,11 @@
   "name": "saga-feeds",
   "version": "0.0.1",
   "description": "The Saga RSS server",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "prettier": "prettier --write \"**/*.js\"",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "develop": "NODE_ENV=development nodemon index.js | bunyan"
+    "develop": "NODE_ENV=development nodemon src/index.js | bunyan"
   },
   "author": "James Cole",
   "license": "GPL-3.0",

@@ -5,7 +5,7 @@ const Promise = require("bluebird");
 const url = require("url");
 const crypto = require("crypto");
 
-const got = require("../helpers/got");
+const got = require("./got");
 const logger = require("./logger").getLogger();
 const { processPost } = require("./processPost");
 

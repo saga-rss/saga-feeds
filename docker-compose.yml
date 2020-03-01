@@ -30,14 +30,14 @@ services:
   # GraphQL server
   saga_app:
     build: .
-    env_file: .env
+    env_file: "etc/default/${ENV:-development}.env"
     ports:
-      - 8085:8085
+      - 8081:8081
     depends_on:
       - saga_mongo
       - saga_redis
     volumes:
-      - .:/opt/app
+      - ${PWD:-.}:/opt/app
       - saga_node_modules:/opt/app/node_modules
 
 volumes:

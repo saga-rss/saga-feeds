@@ -1,9 +1,7 @@
-require("dotenv").config();
-
-const appInfo = require("./package.json");
+const appInfo = require("../package.json");
 
 module.exports = {
-  appName: "saga-feeds",
+  appName: appInfo.name,
   env: process.env.NODE_ENV,
   feedRefreshInterval: 60 * 15 * 1000, // once per 15 minutes
   jwt: {

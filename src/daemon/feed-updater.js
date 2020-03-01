@@ -9,7 +9,7 @@ if (STANDALONE) {
 const program = require("commander");
 
 const config = require("../config");
-const appInfo = require("../package.json");
+const appInfo = require("../../package.json");
 const { refreshFeeds, JOB_TYPE_FEED } = require("../helpers/refreshFeeds");
 const mongoose = require("../services/mongoose");
 const {

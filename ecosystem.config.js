@@ -2,18 +2,18 @@ module.exports = {
   apps: [
     {
       name: "saga-api",
-      script: "./index.js",
+      script: "./src/index.js",
       watch: true
     },
     {
       name: "saga-feed-updater",
-      script: "./daemon/feed-updater.js",
+      script: "./src/daemon/feed-updater.js",
       watch: true,
       args: "-v"
     },
     {
       name: "saga-meta-updater",
-      script: "./daemon/meta-updater.js",
+      script: "./src/daemon/meta-updater.js",
       watch: true,
       args: "-v"
     }

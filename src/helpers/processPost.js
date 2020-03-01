@@ -8,7 +8,7 @@ const sanitizeHtml = require("sanitize-html");
 const config = require("../config");
 const logger = require("./logger").getLogger();
 const { processMeta } = require("./processMeta");
-const Post = require("../models/Post");
+const Post = require("../models/post");
 
 /**
  * Process a post, so that it can be saved

@@ -10,7 +10,7 @@ const metascraper = require("metascraper")([
   require("metascraper-author")()
 ]);
 
-const got = require("../helpers/got");
+const got = require("./got");
 const logger = require("./logger").getLogger();
 
 const processMeta = async (targetUrl, shouldUpdate) => {

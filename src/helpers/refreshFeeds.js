@@ -1,4 +1,4 @@
-const got = require("../helpers/got");
+const got = require("./got");
 const Feed = require("../models/feed");
 const { FeedStartQueueAdd, MetaStartQueueAdd } = require("../workers/queues");
 const logger = require("./logger").getLogger();

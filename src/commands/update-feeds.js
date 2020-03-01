@@ -3,7 +3,7 @@
 const mongoose = require("../services/mongoose");
 const program = require("commander");
 
-const appInfo = require("../package.json");
+const appInfo = require("../../package.json");
 const logger = require("../helpers/logger").getLogger();
 
 const { refreshFeeds } = require("../helpers/refreshFeeds");

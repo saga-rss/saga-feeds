@@ -1,6 +1,6 @@
 const rssFinder = require("rss-finder");
 
-const got = require("../helpers/got");
+const got = require("./got");
 const logger = require("./logger").getLogger();
 
 const validContentTypes = [
