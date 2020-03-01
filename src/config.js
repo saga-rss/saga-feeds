@@ -1,4 +1,4 @@
-const appInfo = require("../package.json");
+const appInfo = require('../package.json')
 
 module.exports = {
   appName: appInfo.name,
@@ -6,18 +6,18 @@ module.exports = {
   feedRefreshInterval: 60 * 15 * 1000, // once per 15 minutes
   jwt: {
     secret: process.env.SAGA_JWT_SECRET,
-    issuer: process.env.SAGA_JWT_ISSUER
+    issuer: process.env.SAGA_JWT_ISSUER,
   },
   metaRefreshInterval: 24 * 60 * 60 * 1000, // once per day
   mongo: {
-    uri: process.env.SAGA_MONGO_URI
+    uri: process.env.SAGA_MONGO_URI,
   },
   redis: {
     host: process.env.SAGA_REDIS_HOST,
-    port: process.env.SAGA_REDIS_PORT
+    port: process.env.SAGA_REDIS_PORT,
   },
   server: {
-    port: process.env.SAGA_SERVER_PORT
+    port: process.env.SAGA_SERVER_PORT,
   },
-  userAgent: `${appInfo.name}/${appInfo.version} ${appInfo.author} ${appInfo.homepage}`
-};
+  userAgent: `${appInfo.name}/${appInfo.version} ${appInfo.author} ${appInfo.homepage}`,
+}

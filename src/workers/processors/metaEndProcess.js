@@ -1,42 +1,42 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose')
 
-const logger = require("../../helpers/logger").getLogger();
-const Feed = require("../../models/feed");
+const logger = require('../../helpers/logger').getLogger()
+const Feed = require('../../models/feed')
 
 module.exports = async (job, done) => {
-  const { data } = job;
+  const { data } = job
 
   if (!data.results) {
-    logger.warn("This meta did not update", data);
-    return done();
+    logger.warn('This meta did not update', data)
+    return done()
   }
 
-  if (data.type !== "Meta") {
-    logger.warn("Received a non-meta job in the meta queue processor", data);
-    return done();
+  if (data.type !== 'Meta') {
+    logger.warn('Received a non-meta job in the meta queue processor', data)
+    return done()
   }
 
   if (!data.feedId || !mongoose.Types.ObjectId.isValid(data.feedId)) {
-    logger.warn("Received an invalid Feed ID in the feed meta processor", data);
-    return done();
+    logger.warn('Received an invalid Feed ID in the feed meta processor', data)
+    return done()
   }
 
-  logger.debug("Saving the results of a new meta job", {
+  logger.debug('Saving the results of a new meta job', {
     queue: job.queue.name,
-    data
-  });
+    data,
+  })
 
   try {
-    const updatedFeed = await Feed.updateFeedMeta(data.feedId, data.results);
+    const updatedFeed = await Feed.updateFeedMeta(data.feedId, data.results)
 
-    return done(null, { feed: updatedFeed });
+    return done(null, { feed: updatedFeed })
   } catch (error) {
-    logger.error("Failed when processing meta job", {
+    logger.error('Failed when processing meta job', {
       data,
       error,
-      queue: job.queue.name
-    });
+      queue: job.queue.name,
+    })
 
-    return done(error);
+    return done(error)
   }
-};
+}

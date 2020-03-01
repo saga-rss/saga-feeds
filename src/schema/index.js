@@ -1,23 +1,10 @@
-const { gql } = require("apollo-server-express");
-const GraphQLObjectId = require("graphql-scalar-objectid");
-const { GraphQLDateTime, GraphQLDate } = require("graphql-iso-date");
+const { gql } = require('apollo-server-express')
+const GraphQLObjectId = require('graphql-scalar-objectid')
+const { GraphQLDateTime, GraphQLDate } = require('graphql-iso-date')
 
-const {
-  feedById,
-  feedCreate,
-  feedPosts,
-  feedSearch,
-  feedSubscribe,
-  feedUnsubscribe
-} = require("./feed");
-const { postById, postContent, postFeed } = require("./post");
-const {
-  userById,
-  userCreate,
-  userLogin,
-  userSearch,
-  userToken
-} = require("./user");
+const { feedById, feedCreate, feedPosts, feedSearch, feedSubscribe, feedUnsubscribe } = require('./feed')
+const { postById, postContent, postFeed } = require('./post')
+const { userById, userCreate, userLogin, userSearch, userToken } = require('./user')
 
 const typeDefs = gql`
   scalar MongoID
@@ -56,12 +43,7 @@ const typeDefs = gql`
     feedCreate(feedUrl: String!): [Feed]
     feedSubscribe(feedId: MongoID!): Feed
     feedUnsubscribe(feedId: MongoID!): Feed
-    userCreate(
-      displayName: String!
-      email: String!
-      password: String!
-      username: String!
-    ): User
+    userCreate(displayName: String!, email: String!, password: String!, username: String!): User
     userUpdate: User
   }
 
@@ -150,7 +132,7 @@ const typeDefs = gql`
     url: String
     token: String
   }
-`;
+`
 
 const resolvers = {
   Date: GraphQLDate,
@@ -162,28 +144,28 @@ const resolvers = {
     postById,
     userById,
     userLogin,
-    userSearch
+    userSearch,
   },
   Mutation: {
     feedCreate,
     feedSubscribe,
     feedUnsubscribe,
     userCreate,
-    userUpdate: () => {}
+    userUpdate: () => {},
   },
   Feed: {
-    posts: feedPosts
+    posts: feedPosts,
   },
   Post: {
     content: postContent,
-    feed: postFeed
+    feed: postFeed,
   },
   User: {
-    token: userToken
-  }
-};
+    token: userToken,
+  },
+}
 
 module.exports = {
   resolvers,
-  typeDefs
-};
+  typeDefs,
+}

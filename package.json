@@ -4,7 +4,7 @@
   "description": "The Saga RSS server",
   "main": "src/index.js",
   "scripts": {
-    "prettier": "prettier --write \"**/*.js\"",
+    "prettier": "prettier --write \"src/**/*.js\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "develop": "NODE_ENV=development nodemon src/index.js | bunyan"
   },

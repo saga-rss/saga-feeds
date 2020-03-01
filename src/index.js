@@ -1,17 +1,17 @@
-const server = require("./services/server");
-const mongoose = require("./services/mongoose");
-const apollo = require("./services/apollo");
+const server = require('./services/server')
+const mongoose = require('./services/mongoose')
+const apollo = require('./services/apollo')
 
-server.start();
-mongoose.start();
+server.start()
+mongoose.start()
 
 // graceful shutdown
-const shutdownSignals = ["SIGINT", "SIGTERM", "SIGQUIT"];
+const shutdownSignals = ['SIGINT', 'SIGTERM', 'SIGQUIT']
 shutdownSignals.forEach(signal => {
   process.on(signal, function() {
-    server.stop();
-    mongoose.stop();
-  });
-});
+    server.stop()
+    mongoose.stop()
+  })
+})
 
-module.exports = apollo;
+module.exports = apollo

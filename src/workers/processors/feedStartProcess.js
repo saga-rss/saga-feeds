@@ -1,48 +1,45 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose')
 
-const { FeedEndQueueAdd } = require("../queues/feedEndQueue");
-const { processFeed } = require("../../helpers/processFeed");
-const logger = require("../../helpers/logger").getLogger();
+const { FeedEndQueueAdd } = require('../queues/feedEndQueue')
+const { processFeed } = require('../../helpers/processFeed')
+const logger = require('../../helpers/logger').getLogger()
 
 module.exports = async (job, done) => {
-  const { data } = job;
+  const { data } = job
 
-  if (data.type !== "Feed") {
-    logger.warn("Received a non-feed job in the feed queue processor", data);
-    return done();
+  if (data.type !== 'Feed') {
+    logger.warn('Received a non-feed job in the feed queue processor', data)
+    return done()
   }
 
   if (!data.feedId || !mongoose.Types.ObjectId.isValid(data.feedId)) {
-    logger.warn(
-      "Received an invalid Feed ID in the feed queue processor",
-      data
-    );
-    return done();
+    logger.warn('Received an invalid Feed ID in the feed queue processor', data)
+    return done()
   }
 
-  logger.debug("Starting a new feed job", {
+  logger.debug('Starting a new feed job', {
     queue: job.queue.name,
-    data
-  });
+    data,
+  })
 
   try {
-    const results = await processFeed(data.url, data.shouldUpdate);
+    const results = await processFeed(data.url, data.shouldUpdate)
 
     await FeedEndQueueAdd({
-      type: "Feed",
+      type: 'Feed',
       feedId: data.feedId,
       url: data.feedUrl,
-      results
-    });
+      results,
+    })
 
-    return done(null, results);
+    return done(null, results)
   } catch (error) {
-    logger.error("Failed when processing feed job", {
+    logger.error('Failed when processing feed job', {
       data,
       error,
-      queue: job.queue.name
-    });
+      queue: job.queue.name,
+    })
 
-    return done(error);
+    return done(error)
   }
-};
+}
