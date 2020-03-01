@@ -1,0 +1,44 @@
+version: '3.7'
+
+services:
+  # MongoDB
+  saga_mongo:
+    image: mongo:4.2.3
+
+#  saga_mongo_express:
+#    image: mongo-express
+#    restart: always
+#    ports:
+#      - ${SAGA_ME_PORT:-8086}:8081
+#    env_file: .env
+
+  # Redis
+  saga_redis:
+    image: redis:5.0.7
+
+  # Elasticsearch
+#  elasticsearch:
+#    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.2
+#    environment:
+#      ES_JAVA_OPTS: "-Xms256m -Xmx256m"
+#    healthcheck:
+#      test: "curl --silent --fail localhost:9200/_cluster/health || exit 1"
+#      interval: 5s
+#      timeout: 2s
+#      retries: 15
+
+  # GraphQL server
+  saga_app:
+    build: .
+    env_file: .env
+    ports:
+      - 8085:8085
+    depends_on:
+      - saga_mongo
+      - saga_redis
+    volumes:
+      - .:/opt/app
+      - saga_node_modules:/opt/app/node_modules
+
+volumes:
+  saga_node_modules:
