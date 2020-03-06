@@ -954,7 +954,7 @@ bluebird@^2.6.2:
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-2.11.0.tgz#534b9033c022c9579c56ba3b3e5a5caafbb650e1"
   integrity sha1-U0uQM8AiyVecVro7Plpcqvu2UOE=
 
-bluebird@^3.5.0, bluebird@^3.7.2:
+bluebird@^3.1.1, bluebird@^3.5.0, bluebird@^3.7.2:
   version "3.7.2"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.7.2.tgz#9f229c15be272454ffa973ace0dbee79a1b0c36f"
   integrity sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==
@@ -1643,6 +1643,13 @@ deep-is@~0.1.3:
   version "0.1.3"
   resolved "https://registry.yarnpkg.com/deep-is/-/deep-is-0.1.3.tgz#b369d6fb5dbc13eecf524f91b070feedc357cf34"
   integrity sha1-s2nW+128E+7PUk+RsHD+7cNXzzQ=
+
+deepdash@^1.9.4:
+  version "1.9.5"
+  resolved "https://registry.yarnpkg.com/deepdash/-/deepdash-1.9.5.tgz#ccbe6b01e90fd89a7f75e9c2273e306dea640550"
+  integrity sha512-nLBCuSAxlCmzSFp2BDqgTmZ99JwHCFglZtV4opUVUiFjuLCUORtpa99zHfT7OquatkHv3pu65YSzPiJ6dB9L6Q==
+  dependencies:
+    lodash "^4.17.11"
 
 default-require-extensions@^2.0.0:
   version "2.0.0"
@@ -3799,6 +3806,25 @@ mongoose-legacy-pluralize@1.0.2:
   resolved "https://registry.yarnpkg.com/mongoose-legacy-pluralize/-/mongoose-legacy-pluralize-1.0.2.tgz#3ba9f91fa507b5186d399fb40854bff18fb563e4"
   integrity sha512-Yo/7qQU4/EyIS8YDFSeenIvXxZN+ld7YdV9LqFVQJzTLye8unujAWPZ4NWKfFA+RNjh+wvTWKY9Z3E5XM6ZZiQ==
 
+mongoose-mpath@^2.0.30:
+  version "2.0.30"
+  resolved "https://registry.yarnpkg.com/mongoose-mpath/-/mongoose-mpath-2.0.30.tgz#5c04ce0ee3004c8b0d6fcc3367d676ddb5e09743"
+  integrity sha512-+KLylot2qP3e6rIqdfJwh2kEruhbA989krepb9oC94Ywkssy9AdX2FicIfN6JcpAYNdGdob9Pmwvro0EohqmQw==
+  dependencies:
+    lodash "^4.17.15"
+    mongoose "^5.9.1"
+    stream-worker "^2.0.1"
+
+mongoose-slug-updater@^3.1.4:
+  version "3.1.4"
+  resolved "https://registry.yarnpkg.com/mongoose-slug-updater/-/mongoose-slug-updater-3.1.4.tgz#3073b1288c0e761e409e91d724a6ae36ddd054d9"
+  integrity sha512-q59dlolnMFl6IlDSWlsEWqGR/FNR0uPQd53Jlfdhpfoo0lMhOh8dIsQEGzvRs7/DWP8n2npx+pRjL+gMVL1Gpw==
+  dependencies:
+    deepdash "^1.9.4"
+    lodash "^4.17.11"
+    shortid "^2.2.14"
+    speakingurl "^14.0.1"
+
 mongoose-string-query@^0.2.7:
   version "0.2.7"
   resolved "https://registry.yarnpkg.com/mongoose-string-query/-/mongoose-string-query-0.2.7.tgz#d37303c0905aeffbce425892e96a3019a02186ca"
@@ -3841,6 +3867,23 @@ mongoose@^5.8.11:
     bson "~1.1.1"
     kareem "2.3.1"
     mongodb "3.4.1"
+    mongoose-legacy-pluralize "1.0.2"
+    mpath "0.6.0"
+    mquery "3.2.2"
+    ms "2.1.2"
+    regexp-clone "1.0.0"
+    safe-buffer "5.1.2"
+    sift "7.0.1"
+    sliced "1.0.1"
+
+mongoose@^5.9.1:
+  version "5.9.2"
+  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-5.9.2.tgz#57ebad26784c1002f31bcdb4ecec69c9ab7a9a63"
+  integrity sha512-Sa1qfqBvUfAgsrXpZjbBoIx8PEDUJSKF5Ous8gnBFI7TPiueSgJjg6GRA7A0teU8AB/vd0h8rl1rD5RQNfWhIw==
+  dependencies:
+    bson "~1.1.1"
+    kareem "2.3.1"
+    mongodb "3.5.3"
     mongoose-legacy-pluralize "1.0.2"
     mpath "0.6.0"
     mquery "3.2.2"
@@ -3910,6 +3953,11 @@ nan@^2.14.0:
   version "2.14.0"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.14.0.tgz#7818f722027b2459a86f0295d434d1fc2336c52c"
   integrity sha512-INOFj37C7k3AfaNTtX8RhsTw7qRy7eLET14cROi9+5HAVbbHuIWUHEauBv5qT4Av2tWasiTY1Jw6puUNqRJXQg==
+
+nanoid@^2.1.0:
+  version "2.1.11"
+  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-2.1.11.tgz#ec24b8a758d591561531b4176a01e3ab4f0f0280"
+  integrity sha512-s/snB+WGm6uwi0WjsZdaVcuf3KJXlfGl2LcxgwkEwJF0D/BWzVWAZW/XY4bFaiR7s0Jk3FPvlnepg1H1b1UwlA==
 
 ncp@~2.0.0:
   version "2.0.0"
@@ -5154,6 +5202,13 @@ shebang-regex@^3.0.0:
   resolved "https://registry.yarnpkg.com/shebang-regex/-/shebang-regex-3.0.0.tgz#ae16f1644d873ecad843b0307b143362d4c42172"
   integrity sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==
 
+shortid@^2.2.14:
+  version "2.2.15"
+  resolved "https://registry.yarnpkg.com/shortid/-/shortid-2.2.15.tgz#2b902eaa93a69b11120373cd42a1f1fe4437c122"
+  integrity sha512-5EaCy2mx2Jgc/Fdn9uuDuNIIfWBpzY4XIlhoqtXF6qsf+/+SGZ+FxDdX/ZsMZiWupIWNqAEmiNY4RC+LSmCeOw==
+  dependencies:
+    nanoid "^2.1.0"
+
 sift@7.0.1:
   version "7.0.1"
   resolved "https://registry.yarnpkg.com/sift/-/sift-7.0.1.tgz#47d62c50b159d316f1372f8b53f9c10cd21a4b08"
@@ -5262,6 +5317,11 @@ spdy@^4.0.0:
     select-hose "^2.0.0"
     spdy-transport "^3.0.0"
 
+speakingurl@^14.0.1:
+  version "14.0.1"
+  resolved "https://registry.yarnpkg.com/speakingurl/-/speakingurl-14.0.1.tgz#f37ec8ddc4ab98e9600c1c9ec324a8c48d772a53"
+  integrity sha512-1POYv7uv2gXoyGFpBCmpDVSNV74IfsWlDW216UPjbWufNf+bSU6GdbDsxdcxtfwb4xlI3yxzOTKClUosxARYrQ==
+
 sprintf-js@~1.0.2:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
@@ -5323,6 +5383,13 @@ stream-transform@^2.0.1:
   integrity sha512-GiTcO/rRvZP2R8WPwxmxCFP+Of1yIATuFAmYkvSLDfcD93X2WHiPwdgIqeFT2CvL1gyAsjQvu1nB6RDNQ5b2jw==
   dependencies:
     mixme "^0.3.1"
+
+stream-worker@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/stream-worker/-/stream-worker-2.0.1.tgz#3c2c495f1682472ca313290dbfd11ff69f862c2a"
+  integrity sha1-PCxJXxaCRyyjEykNv9Ef9p+GLCo=
+  dependencies:
+    bluebird "^3.1.1"
 
 streamsearch@0.1.2:
   version "0.1.2"

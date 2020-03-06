@@ -157,34 +157,6 @@ const schema = new Schema(
   },
 )
 
-schema.methods.detailView = function detailView() {
-  const transformed = {}
-  const fields = [
-    'postType',
-    'title',
-    'url',
-    'favoriteCount',
-    'summary',
-    'description',
-    'images',
-    'content',
-    'enclosures',
-    'publishedDate',
-    'commentUrl',
-    'identifier',
-    'interests',
-    'author',
-    'wordCount',
-    'direction',
-    'feed',
-    'postStaleDate',
-  ]
-  fields.forEach(field => {
-    transformed[field] = this[field]
-  })
-  return transformed
-}
-
 schema.methods.postNeedsUpdating = function postNeedsUpdating() {
   if (!this.postStaleDate) return true
 

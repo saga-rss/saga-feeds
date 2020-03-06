@@ -3,6 +3,7 @@ const GraphQLObjectId = require('graphql-scalar-objectid')
 const { GraphQLDateTime, GraphQLDate } = require('graphql-iso-date')
 
 const { feedById, feedCreate, feedPosts, feedSearch, feedSubscribe, feedUnsubscribe } = require('./feed')
+const { interestCreate, interestSearch, interestUpdate } = require('./interest')
 const { postById, postContent, postFeed } = require('./post')
 const { userById, userCreate, userLogin, userSearch, userToken } = require('./user')
 
@@ -33,6 +34,7 @@ const typeDefs = gql`
   type Query {
     feedById(id: MongoID!): Feed
     feedSearch(sort: Sort, sortDirection: SortDirection): [Feed]
+    interestSearch: [Interest]
     postById(id: MongoID!): Post
     userById(id: MongoID!): User
     userLogin(email: String!, password: String): User
@@ -40,11 +42,20 @@ const typeDefs = gql`
   }
 
   type Mutation {
-    feedCreate(feedUrl: String!): [Feed]
+    feedCreate(feedUrl: String!, interests: [String]): [Feed]
     feedSubscribe(feedId: MongoID!): Feed
     feedUnsubscribe(feedId: MongoID!): Feed
+    interestCreate(name: String!, parent: MongoID): Interest
+    interestUpdate(name: String, parent: MongoID, id: MongoID!): Interest
     userCreate(displayName: String!, email: String!, password: String!, username: String!): User
     userUpdate: User
+  }
+
+  type Interest {
+    name: String
+    slug: String
+    id: MongoID
+    children: [Interest]
   }
 
   type FeedImage {
@@ -141,6 +152,7 @@ const resolvers = {
   Query: {
     feedById,
     feedSearch,
+    interestSearch,
     postById,
     userById,
     userLogin,
@@ -150,6 +162,8 @@ const resolvers = {
     feedCreate,
     feedSubscribe,
     feedUnsubscribe,
+    interestCreate,
+    interestUpdate,
     userCreate,
     userUpdate: () => {},
   },

@@ -16,7 +16,7 @@ const feedById = async (source, { id }, context) => {
   return feed
 }
 
-const feedCreate = async (source, { feedUrl }, context) => {
+const feedCreate = async (source, { feedUrl, interests }, context) => {
   const normalizedFeedUrl = normalizeUrl(feedUrl)
   const discovered = await discoverFeeds(normalizedFeedUrl)
 
@@ -45,7 +45,10 @@ const feedCreate = async (source, { feedUrl }, context) => {
     const { meta, posts } = processed
 
     const feedResponse = await context.models.feed.findOneAndUpdate(
-      { identifier: meta.identifier },
+      {
+        identifier: meta.identifier,
+        interests,
+      },
       {
         ...meta,
         feedUrl: normalizeUrl(feedUrl.url),

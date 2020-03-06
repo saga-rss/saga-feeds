@@ -23,7 +23,10 @@ const start = () => {
   const uri = config.mongo.uri
 
   return mongoose.connect(uri, {
-    keepAlive: 1,
+    keepAlive: true,
+    keepAliveInitialDelay: 300000,
+    poolSize: 2,
+    socketTimeoutMS: 12000,
     useNewUrlParser: true,
     useFindAndModify: false,
     useCreateIndex: true,

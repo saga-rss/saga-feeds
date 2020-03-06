@@ -9,7 +9,7 @@ const server = new ApolloServer({
   resolvers,
   context: ({ req }) => ({
     models,
-    user: req.user,
+    user: req.user, // user extracted from JWT
   }),
   formatError: error => {
     logger.error(`Apollo Error: ${error.message}`, { error })

@@ -75,6 +75,11 @@ const schema = new Schema(
         default: '',
       },
     },
+    interests: {
+      type: [String],
+      index: true,
+      default: [],
+    },
     isFeatured: {
       type: Boolean,
       default: false,
@@ -89,11 +94,6 @@ const schema = new Schema(
       type: Boolean,
       default: true,
       index: true,
-    },
-    interests: {
-      type: [String],
-      index: true,
-      default: [],
     },
     language: {
       type: String,
@@ -152,36 +152,6 @@ const schema = new Schema(
     collection: 'feed',
   },
 )
-
-schema.methods.detailView = function detailView() {
-  const transformed = {
-    id: this._id,
-  }
-  const fields = [
-    'feedType',
-    'title',
-    'url',
-    'feedUrl',
-    'subscriptionCount',
-    'favoriteCount',
-    'summary',
-    'language',
-    'images',
-    'isFeatured',
-    'description',
-    'publishedDate',
-    'isVisible',
-    'isPublic',
-    'updatedDate',
-    'interests',
-    'identifier',
-    'copyright',
-  ]
-  fields.forEach(field => {
-    transformed[field] = this[field]
-  })
-  return transformed
-}
 
 schema.methods.feedNeedsUpdating = function feedNeedsUpdating(feedHeaders) {
   if (!this.feedStaleDate) return true

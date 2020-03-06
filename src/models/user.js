@@ -98,13 +98,4 @@ schema.methods.getToken = function getToken() {
   )
 }
 
-schema.methods.detailView = function detailView() {
-  const transformed = {}
-  const fields = ['_id', 'bio', 'displayName', 'email', 'interests', 'isActive', 'isAdmin', 'username', 'url']
-  fields.forEach(field => {
-    transformed[field] = this[field]
-  })
-  return transformed
-}
-
 module.exports = mongoose.models.User || mongoose.model('User', schema)
