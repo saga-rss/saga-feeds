@@ -75,11 +75,17 @@ const schema = new Schema(
         default: '',
       },
     },
-    interests: {
-      type: [String],
-      index: true,
-      default: [],
-    },
+    interests: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Interest',
+        autopopulate: {
+          select: ['_id', 'slug', 'name'],
+        },
+        required: true,
+        index: true,
+      },
+    ],
     isFeatured: {
       type: Boolean,
       default: false,

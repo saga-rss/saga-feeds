@@ -36,6 +36,17 @@ const feedCreate = async (source, { feedUrl, interests }, context) => {
       return exists
     }
 
+    const foundInterests = []
+    if (interests.length) {
+      await Promise.mapSeries(interests, async interestId => {
+        const found = await context.models.interest.findOne({ _id: interestId })
+        if (found) {
+          foundInterests.push(found)
+        }
+        return found
+      })
+    }
+
     const processed = await processFeed(feedUrl.url, true)
 
     if (!processed) {
@@ -47,11 +58,11 @@ const feedCreate = async (source, { feedUrl, interests }, context) => {
     const feedResponse = await context.models.feed.findOneAndUpdate(
       {
         identifier: meta.identifier,
-        interests,
       },
       {
         ...meta,
         feedUrl: normalizeUrl(feedUrl.url),
+        interests: foundInterests,
       },
       {
         new: true,
@@ -72,10 +83,19 @@ const feedCreate = async (source, { feedUrl, interests }, context) => {
       })
     }
 
-    return feedResponse.detailView()
+    return feedResponse
   })
 
   return feeds
+}
+
+const feedInterests = async (source, args, context) => {
+  if (source instanceof context.models.feed) {
+    const interests = await Promise.all(source.interests.map(interest => context.models.interest.findById(interest)))
+
+    return interests
+  }
+  return null
 }
 
 const feedPosts = async (source, args, context) => {
@@ -106,6 +126,7 @@ const feedUnsubscribe = async (source, { feedId }, context) => {
 module.exports = {
   feedById,
   feedCreate,
+  feedInterests,
   feedPosts,
   feedSearch,
   feedSubscribe,

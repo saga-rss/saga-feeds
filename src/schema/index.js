@@ -2,7 +2,7 @@ const { gql } = require('apollo-server-express')
 const GraphQLObjectId = require('graphql-scalar-objectid')
 const { GraphQLDateTime, GraphQLDate } = require('graphql-iso-date')
 
-const { feedById, feedCreate, feedPosts, feedSearch, feedSubscribe, feedUnsubscribe } = require('./feed')
+const { feedById, feedCreate, feedInterests, feedPosts, feedSearch, feedSubscribe, feedUnsubscribe } = require('./feed')
 const { interestCreate, interestSearch, interestUpdate } = require('./interest')
 const { postById, postContent, postFeed } = require('./post')
 const { userById, userCreate, userLogin, userSearch, userToken } = require('./user')
@@ -42,7 +42,7 @@ const typeDefs = gql`
   }
 
   type Mutation {
-    feedCreate(feedUrl: String!, interests: [String]): [Feed]
+    feedCreate(feedUrl: String!, interests: [MongoID]): [Feed]
     feedSubscribe(feedId: MongoID!): Feed
     feedUnsubscribe(feedId: MongoID!): Feed
     interestCreate(name: String!, parent: MongoID): Interest
@@ -74,7 +74,7 @@ const typeDefs = gql`
     feedUrl: String!
     id: MongoID!
     identifier: String
-    interests: [String]
+    interests: [Interest]
     images: FeedImage
     isFeatured: Boolean
     isPublic: Boolean
@@ -168,6 +168,7 @@ const resolvers = {
     userUpdate: () => {},
   },
   Feed: {
+    interests: feedInterests,
     posts: feedPosts,
   },
   Post: {
