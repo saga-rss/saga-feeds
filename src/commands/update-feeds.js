@@ -8,6 +8,8 @@ const logger = require('../helpers/logger').getLogger()
 
 const { refreshFeeds } = require('../helpers/refreshFeeds')
 
+const FeedUpdaterDaemon = require('../daemon/feed-updater')
+
 const shutdown = code => {
   mongoose.stop(function() {
     process.exit(code)
@@ -25,24 +27,13 @@ logger.level(program.debug ? 'debug' : program.verbose ? 'info' : 'error')
 
 mongoose.start(function(error) {
   if (error) {
+    logger.error('unable to start mongo connection', { error })
     shutdown(1)
   }
 
   // start refreshing feeds
-  refreshFeeds(program.force)
-    .then(() => {
-      process.exit(0)
-    })
-    .catch(error => {
-      console.log(error)
-      process.exit(1)
-    })
-})
-
-const shutdownSignals = ['SIGINT', 'SIGTERM', 'SIGQUIT']
-
-shutdownSignals.forEach(signal => {
-  process.on(signal, function() {
-    shutdown(signal === 'SIGINT' ? 1 : 0)
+  const updater = new FeedUpdaterDaemon(program.force)
+  return updater.start().then(() => {
+    process.exit(0)
   })
 })

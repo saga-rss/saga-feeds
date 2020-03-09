@@ -105,7 +105,7 @@ if (STANDALONE) {
     .option('-f, --force', 'force all feeds to update even if they are not expired', false)
     .parse(process.argv)
 
-  logger.level(program.debug ? 'debug' : program.verbose ? 'info' : 'error')
+  logger.level(program.debug ? 'debug' : program.verbose ? 'info' : config.logLevel)
 
   const daemon = new MetaUpdaterDaemon(program.force)
 

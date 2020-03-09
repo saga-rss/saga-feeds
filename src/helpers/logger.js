@@ -1,8 +1,10 @@
 const bunyan = require('bunyan')
 
+const config = require('../config')
+
 const logger = bunyan.createLogger({
   name: 'saga-feeds',
-  level: 'debug',
+  level: config.logLevel,
   src: true,
   streams: [
     {

@@ -1,10 +1,11 @@
 const Queue = require('bull')
 
+const { bullOptions } = require('../../services/redis')
 const processor = require('../processors/feedEndProcess')
 const PROCESS_LIMIT = 20
 const RSS_NEW_FEED_END = 'rss/NEW_FEED_END'
 
-const FeedEndQueue = new Queue(RSS_NEW_FEED_END)
+const FeedEndQueue = new Queue(RSS_NEW_FEED_END, bullOptions)
 const FeedEndQueueAdd = FeedEndQueue.add.bind(FeedEndQueue)
 const FeedEndQueueProcess = () => FeedEndQueue.process(PROCESS_LIMIT, processor)
 const FeedEndQueueStop = () => FeedEndQueue.close()

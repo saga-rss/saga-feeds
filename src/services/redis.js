@@ -1,7 +1,7 @@
 const Redis = require('ioredis')
 
 const config = require('../config')
-const redis = new Redis(config.redis.port, config.redis.host)
+const redis = new Redis(config.redis.uri)
 const logger = require('../helpers/logger').getLogger('redis')
 
 redis.on('connect', function() {
@@ -12,30 +12,43 @@ redis.on('error', function(error) {
   logger.error(`Error in Redis client initialization`, { error })
 })
 
-const subscriberRedis = new Redis(config.redis.port, config.redis.host)
-const subscriberLogger = require('../helpers/logger').getLogger('redis-subscriber')
+const subscriber = new Redis(config.redis.uri)
 
-subscriberRedis.on('connect', function() {
-  subscriberLogger.info('Redis client connected')
+subscriber.on('connect', function() {
+  logger.info('Redis client connected (subscriber)')
 })
 
-subscriberRedis.on('error', function(error) {
-  subscriberLogger.error(`Error in Redis client initialization`, { error })
+subscriber.on('error', function(error) {
+  logger.error(`Error in Redis client initialization (subscriber)`, { error })
 })
 
-const publisherRedis = new Redis(config.redis.port, config.redis.host)
-const publisherLogger = require('../helpers/logger').getLogger('redis-publisher')
+const publisher = new Redis(config.redis.uri)
 
-publisherRedis.on('connect', function() {
-  publisherLogger.info('Redis client connected')
+publisher.on('connect', function() {
+  logger.info('Redis client connected (publisher)')
 })
 
-publisherRedis.on('error', function(error) {
-  publisherLogger.error(`Error in Redis client initialization`, { error })
+publisher.on('error', function(error) {
+  logger.error(`Error in Redis client initialization (publisher)`, { error })
 })
+
+// options for bull queues
+const bullOptions = {
+  createClient: function(type) {
+    switch (type) {
+      case 'client':
+        return publisher
+      case 'subscriber':
+        return subscriber
+      default:
+        return redis
+    }
+  },
+}
 
 module.exports = {
+  bullOptions,
   redis,
-  subscriberRedis,
-  publisherRedis,
+  subscriber,
+  publisher,
 }

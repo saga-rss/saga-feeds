@@ -55,6 +55,7 @@ const feedCreate = async (source, { feedUrl, interests }, context) => {
 
     const { meta, posts } = processed
 
+    // create the feed
     const feedResponse = await context.models.feed.findOneAndUpdate(
       {
         identifier: meta.identifier,
@@ -70,6 +71,7 @@ const feedCreate = async (source, { feedUrl, interests }, context) => {
       },
     )
 
+    // create posts if there are any
     if (posts.length) {
       await Promise.map(posts, post => {
         return context.models.post.findOneAndUpdate(
@@ -83,7 +85,13 @@ const feedCreate = async (source, { feedUrl, interests }, context) => {
       })
     }
 
-    return feedResponse
+    // update the feed post count
+    await context.models.feed.updatePostCount(feedResponse._id)
+
+    // get full created feed
+    const createdFeed = await context.models.feed.findById(feedResponse._id)
+
+    return createdFeed
   })
 
   return feeds

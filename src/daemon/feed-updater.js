@@ -24,6 +24,10 @@ function FeedUpdaterDaemon(forcedUpdate = false) {
   // controls ability to pause processing
   this.isPaused = false
 
+  // set the processing state, so subsequent calls
+  // to update are not overlapping
+  this.isProcessing = false
+
   // timer between daemon executions
   this.sleeping = null
 
@@ -32,21 +36,29 @@ function FeedUpdaterDaemon(forcedUpdate = false) {
 }
 
 FeedUpdaterDaemon.prototype.updateFeeds = function updateFeed() {
-  if (this.isPaused) {
+  if (this.isPaused || this.isProcessing) {
     return false
   }
+
+  this.isProcessing = true
 
   logger.info('feeds are updating now')
 
   refreshFeeds(this.forcedUpdate, JOB_TYPE_FEED).then(() => {
-    this.goToSleep(this.updateFeeds)
+    this.isProcessing = false
+
+    if (STANDALONE) {
+      this.goToSleep(this.updateFeeds)
+    } else {
+      logger.info('finished updating feeds')
+    }
   })
 }
 
 FeedUpdaterDaemon.prototype.goToSleep = function goToSleep(fn) {
   this.sleeping = setTimeout(() => {
     return fn.call(this)
-  }, config.feedRefreshInterval)
+  }, 30000)
 }
 
 FeedUpdaterDaemon.prototype.start = function start() {
@@ -105,7 +117,7 @@ if (STANDALONE) {
     .option('-f, --force', 'force all feeds to update even if they are not expired', false)
     .parse(process.argv)
 
-  logger.level(program.debug ? 'debug' : program.verbose ? 'info' : 'error')
+  logger.level(program.debug ? 'debug' : program.verbose ? 'info' : config.logLevel)
 
   const daemon = new FeedUpdaterDaemon(program.force)
 

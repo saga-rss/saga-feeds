@@ -96,11 +96,6 @@ const schema = new Schema(
       default: true,
       index: true,
     },
-    isVisible: {
-      type: Boolean,
-      default: true,
-      index: true,
-    },
     language: {
       type: String,
       default: '',
@@ -164,9 +159,10 @@ schema.methods.feedNeedsUpdating = function feedNeedsUpdating(feedHeaders) {
 
   const thirtySecondsAgo = subSeconds(new Date(), 30)
 
-  const lastModifiedDate = feedHeaders['last-modified']
-    ? new Date(feedHeaders['last-modified'])
-    : new Date(this.feedStaleDate)
+  const lastModifiedDate =
+    feedHeaders['last-modified'] && isAfter(new Date(feedHeaders['last-modified']), new Date(this.feedStaleDate))
+      ? new Date(feedHeaders['last-modified'])
+      : new Date(this.feedStaleDate)
 
   const isFeedStale = isAfter(thirtySecondsAgo, lastModifiedDate)
 
@@ -190,10 +186,10 @@ schema.statics.updateFavoriteCount = async function updateFavoriteCount(id, amou
 }
 
 schema.statics.updatePostCount = async function updatePostCount(id) {
-  const postCount = await mongoose
-    .model('Post')
+  const postCount = await this.model('Post')
     .find({ feed: id })
     .count()
+
   await this.findOneAndUpdate({ _id: id }, { $inc: { postCount: postCount } }).exec()
 }
 

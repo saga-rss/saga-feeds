@@ -78,7 +78,6 @@ const typeDefs = gql`
     images: FeedImage
     isFeatured: Boolean
     isPublic: Boolean
-    isVisible: Boolean
     language: String
     posts: [Post]
     postCount: Int
