@@ -6,6 +6,11 @@ services:
     image: mongo:4.2.3
     ports:
       - "27017:27017"
+    healthcheck:
+      test: "mongo --quiet \"localhost/config\" --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'"
+      interval: 5s
+      timeout: 2s
+      retries: 15
 
   saga_mongo_express:
     image: mongo-express
@@ -21,6 +26,11 @@ services:
     image: redis:5.0.7
     ports:
       - "6379:6379"
+    healthcheck:
+      test: "\"$$(redis-cli ping)\" && [ \"$$ping\" = 'PONG' ] || exit 1"
+      interval: 5s
+      timeout: 2s
+      retries: 15
 
   # Elasticsearch
 #  elasticsearch:
@@ -45,6 +55,8 @@ services:
     volumes:
       - ${PWD:-.}:/opt/app
       - saga_node_modules:/opt/app/node_modules
+    healthcheck:
+      disable: true
 
 volumes:
   saga_node_modules:

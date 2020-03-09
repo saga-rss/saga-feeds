@@ -58,7 +58,7 @@ FeedUpdaterDaemon.prototype.updateFeeds = function updateFeed() {
 FeedUpdaterDaemon.prototype.goToSleep = function goToSleep(fn) {
   this.sleeping = setTimeout(() => {
     return fn.call(this)
-  }, 30000)
+  }, config.feedRefreshInterval)
 }
 
 FeedUpdaterDaemon.prototype.start = function start() {
