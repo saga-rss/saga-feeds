@@ -37,7 +37,7 @@ const feedCreate = async (source, { feedUrl, interests }, context) => {
     }
 
     const foundInterests = []
-    if (interests.length) {
+    if (interests && interests.length) {
       await Promise.mapSeries(interests, async interestId => {
         const found = await context.models.interest.findOne({ _id: interestId })
         if (found) {
@@ -106,9 +106,9 @@ const feedInterests = async (source, args, context) => {
   return null
 }
 
-const feedPosts = async (source, args, context) => {
+const feedPosts = async (source, { limit = 10, skip = 0 }, context) => {
   if (source instanceof context.models.feed) {
-    const posts = await context.models.post.find({ feed: source.id })
+    const posts = await context.models.post.find({ feed: source.id }, null, { skip, limit })
     return posts
   }
   return null

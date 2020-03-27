@@ -89,3 +89,6 @@ dist
 .vscode-test
 
 .idea
+
+# SAGA backups
+backups/
