@@ -4,6 +4,7 @@ const { ApolloError } = require('apollo-server-express')
 
 const { discoverFeeds } = require('../helpers/discovery')
 const { processFeed } = require('../helpers/processFeed')
+const { updatePostMeta } = require('../helpers/processPost')
 const logger = require('../helpers/logger').getLogger()
 
 const feedById = async (source, { id }, context) => {
@@ -73,8 +74,8 @@ const feedCreate = async (source, { feedUrl, interests }, context) => {
 
     // create posts if there are any
     if (posts.length) {
-      await Promise.map(posts, post => {
-        return context.models.post.findOneAndUpdate(
+      await Promise.map(posts, async post => {
+        const createdPost = await context.models.post.findOneAndUpdate(
           { identifier: post.identifier },
           {
             ...post,
@@ -83,6 +84,11 @@ const feedCreate = async (source, { feedUrl, interests }, context) => {
           { new: true, upsert: true },
         )
       })
+
+      if (createdPost.url) {
+        // get new post meta
+        await updatePostMeta(createdPost.id, createdPost.url, true)
+      }
     }
 
     // update the feed post count

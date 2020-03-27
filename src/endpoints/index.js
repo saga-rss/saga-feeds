@@ -31,6 +31,11 @@ const typeDefs = gql`
     desc
   }
 
+  type PaginationSettings {
+    limit: Int
+    skip: Int
+  }
+
   type Query {
     feedById(id: MongoID!): Feed
     feedSearch(sort: Sort, sortDirection: SortDirection): [Feed]

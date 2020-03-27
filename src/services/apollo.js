@@ -2,7 +2,7 @@ const { ApolloServer } = require('apollo-server-express')
 
 const logger = require('../helpers/logger').getLogger()
 const models = require('../models')
-const { typeDefs, resolvers } = require('../schema')
+const { typeDefs, resolvers } = require('../endpoints')
 
 const server = new ApolloServer({
   typeDefs,

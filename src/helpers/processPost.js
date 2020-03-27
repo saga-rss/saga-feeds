@@ -158,31 +158,43 @@ const createPostIdentifier = (guid, link, enclosures) => {
  * @returns {*}
  */
 const processMedia = (content, enclosures) => {
-  const mainContent = content['@']
-
-  let type = mainContent.medium
-
-  if (!type && mainContent.type) {
-    if (mainContent.type.indexOf('audio') >= 0) {
-      type = 'audio'
-    } else if (mainContent.type.indexOf('video') >= 0) {
-      type = 'video'
-    }
+  if (Array.isArray(content)) {
+    content.forEach(c => {
+      const mainContent = c['@']
+      processor(mainContent)
+    })
+  } else {
+    const mainContent = content['@']
+    processor(mainContent)
   }
 
-  const contentTitle = content['media:title'] ? content['media:title']['#'] : ''
-  const contentDescription = content['media:description'] ? content['media:description']['#'] : ''
+  function processor(item) {
+    let type = item.medium
 
-  enclosures.push({
-    url: mainContent.url,
-    type: mainContent.type || '',
-    length: mainContent.filesize || mainContent.length || '',
-    width: mainContent.width || '',
-    height: mainContent.height || '',
-    title: contentTitle,
-    description: contentDescription,
-    medium: type,
-  })
+    if (!type && item.type) {
+      if (item.type.indexOf('audio') >= 0) {
+        type = 'audio'
+      } else if (item.type.indexOf('video') >= 0) {
+        type = 'video'
+      }
+    }
+
+    const contentTitle = content['media:title'] ? content['media:title']['#'] : item['media:title'] || ''
+    const contentDescription = content['media:description']
+      ? content['media:description']['#']
+      : item['media:description'] || ''
+
+    enclosures.push({
+      url: item.url,
+      type: item.type || '',
+      length: item.filesize || item.length || '',
+      width: item.width || '',
+      height: item.height || '',
+      title: contentTitle,
+      description: contentDescription,
+      medium: type,
+    })
+  }
 
   return enclosures
 }

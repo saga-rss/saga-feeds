@@ -9,6 +9,17 @@ const postById = async (source, { id }, context) => {
     throw new ApolloError('post not found', 'NOT_FOUND')
   }
 
+  if (post.postNeedsUpdating() && post.url) {
+    // get new post meta
+    await updatePostMeta(id, post.url, true)
+
+    // set the post stale date
+    await context.models.post.setStaleDate(id)
+
+    // fetch the post again
+    post = await context.models.post.findById(id)
+  }
+
   return post
 }
 
@@ -18,7 +29,6 @@ const postContent = async ({ id, url, content }, args, context) => {
   if (url) {
     const forceUpdate = !content || content.length < 0
     await updatePostContent(id, url, forceUpdate)
-    await updatePostMeta(id, url, forceUpdate)
     await context.models.post.setStaleDate(id)
     const updatedPost = await context.models.post.findById(id)
 
