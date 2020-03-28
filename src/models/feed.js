@@ -190,7 +190,7 @@ schema.statics.updatePostCount = async function updatePostCount(id) {
     .find({ feed: id })
     .count()
 
-  await this.findOneAndUpdate({ _id: id }, { $inc: { postCount: postCount } }).exec()
+  await this.findOneAndUpdate({ _id: id }, { $set: { postCount: postCount } }).exec()
 }
 
 schema.statics.updateFeedMeta = async function updateFeedMeta(feedId, meta) {

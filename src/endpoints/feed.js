@@ -83,12 +83,12 @@ const feedCreate = async (source, { feedUrl, interests }, context) => {
           },
           { new: true, upsert: true },
         )
-      })
 
-      if (createdPost.url) {
-        // get new post meta
-        await updatePostMeta(createdPost.id, createdPost.url, true)
-      }
+        if (createdPost.url) {
+          // get new post meta
+          await updatePostMeta(createdPost.id, createdPost.url, true)
+        }
+      })
     }
 
     // update the feed post count
@@ -112,7 +112,7 @@ const feedInterests = async (source, args, context) => {
   return null
 }
 
-const feedPosts = async (source, { limit = 10, skip = 0 }, context) => {
+const feedPosts = async (source, { limit = 1000, skip = 0 }, context) => {
   if (source instanceof context.models.feed) {
     const posts = await context.models.post.find({ feed: source.id }, null, { skip, limit })
     return posts

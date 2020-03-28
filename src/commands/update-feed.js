@@ -10,21 +10,28 @@ const FeedUpdaterDaemon = require('../daemon/feed-updater')
 
 program
   .version(appInfo.version)
+  .option('-f, --feed <feedId>', 'MongoDB feed ID', null)
   .option('-v, --verbose', 'verbose logging', false)
   .option('-d, --debug', 'debug logging', false)
   .parse(process.argv)
 
 logger.level(program.debug ? 'debug' : program.verbose ? 'info' : 'error')
 
+if (!program.feed) {
+  logger.info('no feed id was provided')
+  process.exit(0)
+}
+
 mongoose
   .start()
   .then(() => {
-    // start refreshing feeds
+    logger.info(`refreshing feed`, { feedId: program.feed })
+
+    // start refreshing feed
     const updater = new FeedUpdaterDaemon(true)
-    return updater.updateFeeds()
-  })
-  .then(() => {
-    process.exit(0)
+    return updater.updateFeed(program.feed).then(() => {
+      process.exit(0)
+    })
   })
   .catch(error => {
     logger.error(error.message, { error })

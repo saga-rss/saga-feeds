@@ -17,7 +17,7 @@ const {
   MetaStartQueueProcess,
   MetaStartQueueStop,
 } = require('../workers/queues')
-const { refreshFeeds, JOB_TYPE_META } = require('../helpers/refreshFeeds')
+const { refreshFeeds, JOB_TYPE_META } = require('../helpers/feed')
 const logger = require('../helpers/logger').getLogger()
 
 function MetaUpdaterDaemon(forcedUpdate = false) {

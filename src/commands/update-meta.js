@@ -6,7 +6,7 @@ const program = require('commander')
 const appInfo = require('../../package.json')
 const logger = require('../helpers/logger').getLogger()
 
-const { refreshFeeds } = require('../helpers/refreshFeeds')
+const { refreshFeeds } = require('../helpers/feed')
 
 const shutdown = code => {
   mongoose.stop(function() {

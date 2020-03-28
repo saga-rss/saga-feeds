@@ -173,7 +173,7 @@ schema.statics.setStaleDate = async function setStaleDate(id) {
 }
 
 schema.statics.updateByIdentifier = async function updateByIdentifier(identifier, post) {
-  return this.findOneAndUpdate({ identifier: post.identifier }, post, {
+  return this.findOneAndUpdate({ identifier: identifier }, post, {
     new: true,
     upsert: true,
   })

@@ -7,11 +7,15 @@ if (STANDALONE) {
 }
 
 const program = require('commander')
+const Promise = require('bluebird')
 
 const config = require('../config')
 const appInfo = require('../../package.json')
-const { refreshFeeds, JOB_TYPE_FEED } = require('../helpers/refreshFeeds')
+const { refreshFeeds, JOB_TYPE_FEED } = require('../helpers/feed')
+const { processFeed } = require('../helpers/processFeed')
 const mongoose = require('../services/mongoose')
+const Feed = require('../models/feed')
+const Post = require('../models/post')
 const {
   FeedEndQueueProcess,
   FeedEndQueueStop,
@@ -35,7 +39,48 @@ function FeedUpdaterDaemon(forcedUpdate = false) {
   this.forcedUpdate = forcedUpdate
 }
 
-FeedUpdaterDaemon.prototype.updateFeeds = function updateFeed() {
+FeedUpdaterDaemon.prototype.updateFeed = function updateFeed(feedId) {
+  let processResults = null
+
+  return Feed.findById(feedId)
+    .then(feed => processFeed(feed.feedUrl, true))
+    .then(results => {
+      processResults = results
+
+      return Feed.findOneAndUpdate(
+        { _id: feedId },
+        {
+          ...results.meta,
+          scrapeFailureCount: 0, // reset failure count to 0
+        },
+        {
+          new: true,
+        },
+      )
+    })
+    .then(() => {
+      if (processResults.posts.length) {
+        return Promise.map(processResults.posts, post => {
+          return Post.updateByIdentifier(post.identifier, {
+            ...post,
+            feed: feedId,
+          })
+        })
+      } else {
+        return null
+      }
+    })
+    .then(() => {
+      // update the feed post count
+      return Feed.updatePostCount(feedId)
+    })
+    .then(() => {
+      logger.info(`finished updating feed and its posts`, { feedId })
+    })
+    .catch(logger.error)
+}
+
+FeedUpdaterDaemon.prototype.updateFeeds = function updateFeeds() {
   if (this.isPaused || this.isProcessing) {
     return false
   }
@@ -44,7 +89,7 @@ FeedUpdaterDaemon.prototype.updateFeeds = function updateFeed() {
 
   logger.info('feeds are updating now')
 
-  refreshFeeds(this.forcedUpdate, JOB_TYPE_FEED).then(() => {
+  return refreshFeeds(this.forcedUpdate, JOB_TYPE_FEED).then(() => {
     this.isProcessing = false
 
     if (STANDALONE) {
