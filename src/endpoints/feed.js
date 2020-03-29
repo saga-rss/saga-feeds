@@ -4,7 +4,6 @@ const { ApolloError } = require('apollo-server-express')
 
 const { discoverFeeds } = require('../helpers/discovery')
 const { processFeed } = require('../helpers/processFeed')
-const { updatePostMeta } = require('../helpers/processPost')
 const logger = require('../helpers/logger').getLogger()
 
 const feedById = async (source, { id }, context) => {
@@ -54,7 +53,7 @@ const feedCreate = async (source, { feedUrl, interests }, context) => {
       return {}
     }
 
-    const { meta, posts } = processed
+    const { meta } = processed
 
     // create the feed
     const feedResponse = await context.models.feed.findOneAndUpdate(
@@ -71,25 +70,6 @@ const feedCreate = async (source, { feedUrl, interests }, context) => {
         upsert: true,
       },
     )
-
-    // create posts if there are any
-    if (posts.length) {
-      await Promise.map(posts, async post => {
-        const createdPost = await context.models.post.findOneAndUpdate(
-          { identifier: post.identifier },
-          {
-            ...post,
-            feed: feedResponse._id,
-          },
-          { new: true, upsert: true },
-        )
-
-        if (createdPost.url) {
-          // get new post meta
-          await updatePostMeta(createdPost.id, createdPost.url, true)
-        }
-      })
-    }
 
     // update the feed post count
     await context.models.feed.updatePostCount(feedResponse._id)
@@ -112,7 +92,7 @@ const feedInterests = async (source, args, context) => {
   return null
 }
 
-const feedPosts = async (source, { limit = 1000, skip = 0 }, context) => {
+const feedPosts = async (source, { limit = 10, skip = 0 }, context) => {
   if (source instanceof context.models.feed) {
     const posts = await context.models.post.find({ feed: source.id }, null, { skip, limit })
     return posts

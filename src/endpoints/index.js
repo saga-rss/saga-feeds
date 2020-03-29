@@ -127,10 +127,13 @@ const typeDefs = gql`
     id: MongoID!
     identifier: String!
     interests: [String]
+    isPublic: Boolean
     postType: FeedType
+    postUpdatedDate: DateTime
     publishedDate: DateTime
     summary: String
     title: String
+    updatedAt: DateTime
     url: String
     wordCount: Int
   }

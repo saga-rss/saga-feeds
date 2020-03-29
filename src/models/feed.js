@@ -92,6 +92,7 @@ const schema = new Schema(
       index: true,
     },
     isPublic: {
+      // is the post publicly available on the internet
       type: Boolean,
       default: true,
       index: true,

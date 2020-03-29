@@ -7,7 +7,7 @@ const crypto = require('crypto')
 
 const got = require('./got')
 const logger = require('./logger').getLogger()
-const { processPost } = require('./processPost')
+const PostHelper = require('./post.helper')
 
 const processFeed = async (feedUrl, shouldUpdate) => {
   if (!shouldUpdate) return false
@@ -21,7 +21,7 @@ const processFeed = async (feedUrl, shouldUpdate) => {
   const { meta, posts } = await readFeedStream(stream, feedUrl)
 
   const processedPosts = await Promise.map(posts, post => {
-    return processPost(post, shouldUpdate)
+    return PostHelper.findOrCreatePost(post)
   })
 
   meta.identifier = createFeedIdentifier(feedUrl, processedPosts)

@@ -119,7 +119,15 @@ const schema = new Schema(
       index: true,
       default: [],
     },
+    isPublic: {
+      // is the post publicly available on the internet
+      type: Boolean,
+      default: true,
+    },
     postStaleDate: {
+      type: Date,
+    },
+    postUpdatedDate: {
       type: Date,
     },
     postType: {
@@ -191,7 +199,7 @@ schema.plugin(mongooseDelete, {
 })
 schema.plugin(mongooseTimestamp)
 
-schema.index({ rss: 1, publishedDate: -1 })
+schema.index({ feed: 1, publishedDate: -1 })
 schema.index({ publishedDate: -1 })
 
 module.exports = mongoose.models.Post || mongoose.model('Post', schema)
