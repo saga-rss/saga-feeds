@@ -8,38 +8,93 @@ const crypto = require('crypto')
 const got = require('./got')
 const logger = require('./logger').getLogger()
 const PostHelper = require('./post.helper')
+const Feed = require('../models/feed')
+const Post = require('../models/post')
 
-const processFeed = async (feedUrl, shouldUpdate) => {
-  if (!shouldUpdate) return false
+const FeedHelper = {}
 
-  const stream = await createFeedStream(feedUrl)
+FeedHelper.createFeed = async function createFeed(feedUrl, partialDocument) {
+  const { meta, posts } = await FeedHelper.processFeed(feedUrl)
+
+  const initial = Object.assign({}, meta, partialDocument)
+
+  // create the feed
+  const createdFeed = await Feed.findOneAndUpdate(
+    {
+      identifier: meta.identifier,
+    },
+    {
+      ...initial,
+      feedUrl: normalizeUrl(feedUrl),
+    },
+    {
+      new: true,
+      upsert: true,
+    },
+  )
+
+  // create posts if there are any
+  if (posts.length) {
+    await Promise.map(posts, post => {
+      return Post.findOneAndUpdate(
+        { identifier: post.identifier },
+        {
+          ...post,
+          feed: createdFeed._id,
+        },
+        { new: true, upsert: true },
+      )
+    })
+  }
+
+  // update the feed post count
+  await Feed.updatePostCount(createdFeed._id)
+
+  return Feed.findById(createdFeed._id)
+}
+
+FeedHelper.processFeed = async function processFeed(feedUrl) {
+  const stream = await FeedHelper.createFeedStream(feedUrl)
 
   if (!stream) {
     return null
   }
 
-  const { meta, posts } = await readFeedStream(stream, feedUrl)
+  const { meta, posts } = await FeedHelper.readFeedStream(stream, feedUrl)
 
-  const processedPosts = await Promise.map(posts, post => {
-    return PostHelper.findOrCreatePost(post)
+  const normalizedPosts = await Promise.map(posts, post => {
+    return PostHelper.normalizePost(post)
   })
 
-  meta.identifier = createFeedIdentifier(feedUrl, processedPosts)
+  meta.identifier = FeedHelper.createFeedIdentifier(feedUrl, normalizedPosts)
 
-  return { meta, posts: processedPosts }
+  return { meta, posts: normalizedPosts }
 }
 
-const createFeedStream = async feedUrl => {
-  try {
-    const response = await got.stream(feedUrl, { retries: 0 })
-    return response
-  } catch (error) {
-    logger.error(`Create feed stream failure during feed processing`, {
-      error,
-      feedUrl,
-    })
-    return null
-  }
+/**
+ * Determine the type of feed from its enclosures
+ * @param posts {array} - all of the items from the RSS feed
+ * @returns {string} - feed type (article, video, or audio)
+ */
+FeedHelper.determineFeedType = function determineFeedType(posts) {
+  let feedType = 'article'
+
+  posts.forEach(post => {
+    if (post.enclosures) {
+      post.enclosures.forEach(enclosure => {
+        if (!enclosure.type) {
+          return false
+        }
+        if (enclosure.type.indexOf('audio') >= 0) {
+          feedType = 'audio'
+        } else if (enclosure.type.indexOf('video') >= 0) {
+          feedType = 'video'
+        }
+      })
+    }
+  })
+
+  return feedType
 }
 
 /**
@@ -56,7 +111,7 @@ const createFeedStream = async feedUrl => {
  * has been created.
  * @returns {string} - an MD5 has used as an identifier
  */
-const createFeedIdentifier = (feedUrl, posts) => {
+FeedHelper.createFeedIdentifier = function createFeedIdentifier(feedUrl, posts) {
   // parse the url
   const parsedUrl = url.parse(feedUrl)
   let id = `${parsedUrl.hostname}:${parsedUrl.pathname}`
@@ -75,26 +130,19 @@ const createFeedIdentifier = (feedUrl, posts) => {
     .digest('hex')
 }
 
-const determineFeedType = posts => {
-  let feedType = 'article'
-  posts.forEach(post => {
-    if (post.enclosures) {
-      post.enclosures.forEach(enclosure => {
-        if (!enclosure.type) {
-          return false
-        }
-        if (enclosure.type.indexOf('audio') >= 0) {
-          feedType = 'audio'
-        } else if (enclosure.type.indexOf('video') >= 0) {
-          feedType = 'video'
-        }
-      })
-    }
-  })
-  return feedType
+FeedHelper.createFeedStream = async function createFeedStream(feedUrl) {
+  try {
+    return got.stream(feedUrl, { retries: 0 })
+  } catch (error) {
+    logger.error(`Create feed stream failure during feed processing`, {
+      error,
+      feedUrl,
+    })
+    return null
+  }
 }
 
-const readFeedStream = (stream, feedUrl) => {
+FeedHelper.readFeedStream = function readFeedStream(stream, feedUrl) {
   let feedType = ''
   const feed = {
     meta: null,
@@ -112,7 +160,7 @@ const readFeedStream = (stream, feedUrl) => {
         return reject(error)
       })
       .on('end', () => {
-        feedType = determineFeedType(feed.posts)
+        feedType = FeedHelper.determineFeedType(feed.posts)
         const results = {}
 
         results.meta = {
@@ -156,4 +204,4 @@ const readFeedStream = (stream, feedUrl) => {
   })
 }
 
-module.exports = { processFeed }
+module.exports = FeedHelper

@@ -53,33 +53,41 @@ const refreshFeeds = async (forceUpdate = false, jobType = JOB_TYPE_FEED) => {
 }
 
 const scheduleFeedJob = async (doc, freshFeed, forceUpdate) => {
-  const willUpdate = doc.feedNeedsUpdating(freshFeed.headers)
+  const willUpdate = forceUpdate || doc.feedNeedsUpdating(freshFeed.headers)
 
-  await FeedStartQueueAdd(
-    {
-      type: 'Feed',
-      feedId: doc._id,
-      url: doc.feedUrl,
-      rawFeed: freshFeed,
-      shouldUpdate: forceUpdate || willUpdate,
-    },
-    { removeOnComplete: true, removeOnFail: true },
-  )
+  if (willUpdate) {
+    await FeedStartQueueAdd(
+      {
+        type: 'Feed',
+        feedId: doc._id,
+        url: doc.feedUrl,
+        rawFeed: freshFeed,
+        shouldUpdate: willUpdate,
+      },
+      { removeOnComplete: true, removeOnFail: true },
+    )
+  } else {
+    return Promise.resolve(doc)
+  }
 }
 
 const scheduleMetaJob = async (doc, freshFeed, forceUpdate) => {
-  const willUpdate = doc.feedNeedsUpdating(freshFeed.headers)
+  const willUpdate = forceUpdate || doc.feedNeedsUpdating(freshFeed.headers)
 
-  await MetaStartQueueAdd(
-    {
-      type: 'Meta',
-      feedId: doc._id,
-      url: doc.url,
-      rawFeed: freshFeed,
-      shouldUpdate: forceUpdate || willUpdate,
-    },
-    { removeOnComplete: true, removeOnFail: true },
-  )
+  if (willUpdate) {
+    await MetaStartQueueAdd(
+      {
+        type: 'Meta',
+        feedId: doc._id,
+        url: doc.url,
+        rawFeed: freshFeed,
+        shouldUpdate: willUpdate,
+      },
+      { removeOnComplete: true, removeOnFail: true },
+    )
+  } else {
+    return Promise.resolve(doc)
+  }
 }
 
 module.exports = {

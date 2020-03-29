@@ -12,7 +12,9 @@ const postById = async (source, { id }, context) => {
   if (post.postNeedsUpdating() && post.url) {
     // get new post meta
     const meta = await PostHelper.getMeta(id)
-    post = await PostHelper.updateMeta(id, meta)
+    if (meta) {
+      post = await PostHelper.updateMeta(id, meta)
+    }
   }
 
   return post

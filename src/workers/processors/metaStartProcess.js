@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 const { MetaEndQueueAdd } = require('../queues/metaEndQueue')
-const { processMeta } = require('../../helpers/processMeta')
+const MetaHelper = require('../../helpers/meta.helper')
 const logger = require('../../helpers/logger').getLogger()
 
 module.exports = async (job, done) => {
@@ -28,7 +28,7 @@ module.exports = async (job, done) => {
   })
 
   try {
-    const results = await processMeta(data.url, data.shouldUpdate)
+    const results = await MetaHelper.getMeta(data.url)
 
     if (results) {
       await MetaEndQueueAdd({

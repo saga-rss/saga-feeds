@@ -12,17 +12,17 @@ const Promise = require('bluebird')
 const config = require('../config')
 const appInfo = require('../../package.json')
 const { refreshFeeds, JOB_TYPE_FEED } = require('../helpers/feed')
-const { processFeed } = require('../helpers/processFeed')
 const mongoose = require('../services/mongoose')
 const Feed = require('../models/feed')
 const Post = require('../models/post')
+const FeedHelper = require('../helpers/feed.helper')
 const {
   FeedEndQueueProcess,
   FeedEndQueueStop,
   FeedStartQueueProcess,
   FeedStartQueueStop,
 } = require('../workers/queues')
-const logger = require('../helpers/logger').getLogger()
+const logger = require('../helpers/logger').getLogger('feed-updater-daemon')
 
 function FeedUpdaterDaemon(forcedUpdate = false) {
   // controls ability to pause processing
@@ -43,9 +43,11 @@ FeedUpdaterDaemon.prototype.updateFeed = function updateFeed(feedId) {
   let processResults = null
 
   return Feed.findById(feedId)
-    .then(feed => processFeed(feed.feedUrl, true))
+    .then(feed => FeedHelper.processFeed(feed.feedUrl))
     .then(results => {
       processResults = results
+
+      logger.debug(`updating feed meta`, results.meta)
 
       return Feed.findOneAndUpdate(
         { _id: feedId },

@@ -3,7 +3,7 @@ const Promise = require('bluebird')
 const { ApolloError } = require('apollo-server-express')
 
 const { discoverFeeds } = require('../helpers/discovery')
-const { processFeed } = require('../helpers/processFeed')
+const FeedHelper = require('../helpers/feed.helper')
 const logger = require('../helpers/logger').getLogger()
 
 const feedById = async (source, { id }, context) => {
@@ -47,37 +47,9 @@ const feedCreate = async (source, { feedUrl, interests }, context) => {
       })
     }
 
-    const processed = await processFeed(feedUrl.url, true)
-
-    if (!processed) {
-      return {}
-    }
-
-    const { meta } = processed
-
-    // create the feed
-    const feedResponse = await context.models.feed.findOneAndUpdate(
-      {
-        identifier: meta.identifier,
-      },
-      {
-        ...meta,
-        feedUrl: normalizeUrl(feedUrl.url),
-        interests: foundInterests,
-      },
-      {
-        new: true,
-        upsert: true,
-      },
-    )
-
-    // update the feed post count
-    await context.models.feed.updatePostCount(feedResponse._id)
-
-    // get full created feed
-    const createdFeed = await context.models.feed.findById(feedResponse._id)
-
-    return createdFeed
+    return FeedHelper.createFeed(feedUrl.url, {
+      interests: foundInterests,
+    })
   })
 
   return feeds

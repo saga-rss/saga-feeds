@@ -8,8 +8,7 @@ const crypto = require('crypto')
 const logger = require('./logger').getLogger()
 const config = require('../config')
 const Post = require('../models/post')
-const { MetaHelper } = require('./meta.helper')
-const got = require('./got')
+const MetaHelper = require('./meta.helper')
 
 /**
  * Post helpers
@@ -17,35 +16,8 @@ const got = require('./got')
  */
 const PostHelper = {}
 
-PostHelper.findOrCreatePost = async function findOrCreatePost(feedItem) {
-  const postIdentifier = PostHelper.createPostIdentifier(feedItem.guid, feedItem.link, feedItem.enclosures)
-  let post = await Post.find({ identifier: postIdentifier })
-
-  if (!post) {
-    // if the post was not found, it's either a new post,
-    // or maybe the post identifier changed
-    await PostHelper.normalizePost(feedItem)
-
-    post = await Post.create(post)
-  }
-
-  return post
-}
-
-PostHelper.processPostFromUrl = async function processPostFromUrl(url) {
-  if (!url) {
-    return Promise.resolve(null)
-  }
-
-  const { body, headers } = await got.get(url)
-  console.log(headers)
-  const meta = await MetaHelper.getMeta(url, body)
-
-  await PostHelper.updateMeta()
-}
-
 /**
- * Normalize a post, so that it fits our model
+ * Normalize a post (from an RSS feed), so that it fits our model
  *
  * @param post - the RSS item
  * @returns {object} - a processed & normalized post
@@ -125,7 +97,7 @@ PostHelper.normalizePost = async function normalizePost(post) {
     }
   }
 
-  logger.debug(`processed and normalized post`, {
+  logger.info(`processed and normalized post`, {
     ...processed,
   })
 
@@ -376,6 +348,10 @@ PostHelper.updateContent = async function updateContent(id, parsed) {
  * @returns {Promise<T>} - processing promise
  */
 PostHelper.getContent = function getContent(url, html = '') {
+  if (!url) {
+    return Promise.resolve('')
+  }
+
   const mercuryOptions = {
     headers: {
       'user-agent': config.userAgent,
@@ -402,7 +378,7 @@ PostHelper.getContent = function getContent(url, html = '') {
         },
       })
 
-      return null
+      return ''
     })
 }
 

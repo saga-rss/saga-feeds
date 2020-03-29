@@ -22,19 +22,25 @@ const MetaHelper = {}
 /**
  * Get metadata for URL
  * @param {string} targetUrl HTML URL of the page
- * @param {string} html Full HTML of the page
  * @returns {Promise<null>} processing promise
  */
-MetaHelper.getMeta = async function getMeta(targetUrl, html = '') {
+MetaHelper.getMeta = async function getMeta(targetUrl) {
   let results = null
 
+  if (!targetUrl) return results
+
   try {
-    if (!html || !html.length > 0) {
-      const results = await got(targetUrl)
-      html = results.body
+    const { body, headers } = await got(targetUrl)
+
+    if (headers['content-type'] !== 'text/html') {
+      logger.debug(`This url does not reference HTML, so we cannot get meta data from it`, {
+        url: targetUrl,
+      })
+
+      return Promise.resolve(null)
     }
 
-    results = await metascraper({ html, url: targetUrl })
+    results = await metascraper({ body, url: targetUrl })
 
     logger.debug(`Processed meta for url`, {
       url: targetUrl,
@@ -47,40 +53,11 @@ MetaHelper.getMeta = async function getMeta(targetUrl, html = '') {
       url: targetUrl,
       error,
     })
+
+    return null
   }
 
   return results
 }
 
-const processMeta = async (targetUrl, shouldUpdate) => {
-  if (!shouldUpdate) return false
-
-  let results = null
-
-  try {
-    const { body: html, url } = await got(targetUrl)
-    results = await metascraper({ html, url })
-
-    logger.debug(`Processed meta for url`, {
-      targetUrl,
-      results,
-    })
-  } catch (ex) {
-    // this could happen if the request 404'd, or
-    // some other server error happened.
-    logger.warn(`Problem while fetching meta for url`, {
-      targetUrl,
-      error: {
-        message: ex.message,
-        stack: ex.stack,
-      },
-    })
-  }
-
-  return results
-}
-
-module.exports = {
-  processMeta,
-  MetaHelper,
-}
+module.exports = MetaHelper
