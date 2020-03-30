@@ -23,7 +23,7 @@ module.exports = async (job, done) => {
   })
 
   try {
-    const results = await FeedHelper.processFeed(data.url)
+    const results = await FeedHelper.updateFeed(data.url)
 
     await FeedEndQueueAdd({
       type: 'Feed',

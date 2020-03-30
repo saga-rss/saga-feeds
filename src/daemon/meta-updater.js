@@ -17,7 +17,7 @@ const {
   MetaStartQueueProcess,
   MetaStartQueueStop,
 } = require('../workers/queues')
-const { refreshFeeds, JOB_TYPE_META } = require('../helpers/feed')
+const FeedHelper = require('../helpers/feed.helper')
 const logger = require('../helpers/logger').getLogger()
 
 function MetaUpdaterDaemon(forcedUpdate = false) {
@@ -38,7 +38,7 @@ MetaUpdaterDaemon.prototype.updateFeedsMeta = function updateFeed() {
 
   logger.info('meta are updating now')
 
-  refreshFeeds(this.forcedUpdate, JOB_TYPE_META).then(() => {
+  FeedHelper.scheduleFeedUpdateJobs(this.forcedUpdate, FeedHelper.JOB_TYPE_META).then(() => {
     this.goToSleep(this.updateFeedsMeta)
   })
 }

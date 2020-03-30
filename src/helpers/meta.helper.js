@@ -11,7 +11,7 @@ const metascraper = require('metascraper')([
 ])
 
 const got = require('./got')
-const logger = require('./logger').getLogger()
+const logger = require('./logger').getLogger('helper-meta')
 
 /**
  * Meta helper
@@ -29,10 +29,15 @@ MetaHelper.getMeta = async function getMeta(targetUrl) {
 
   if (!targetUrl) return results
 
+  logger.debug(`Starting meta for url`, {
+    url: targetUrl,
+  })
+
   try {
     const { body, headers } = await got(targetUrl)
 
-    if (headers['content-type'] !== 'text/html') {
+    if (headers['content-type'].indexOf('html') < 0) {
+      // this is a url for something that can't be a webpage
       logger.debug(`This url does not reference HTML, so we cannot get meta data from it`, {
         url: targetUrl,
       })

@@ -2,6 +2,7 @@ const { FeedStartQueue, FeedStartQueueAdd, FeedStartQueueProcess, FeedStartQueue
 const { FeedEndQueue, FeedEndQueueAdd, FeedEndQueueProcess, FeedEndQueueStop } = require('./feedEndQueue')
 const { MetaEndQueue, MetaEndQueueAdd, MetaEndQueueProcess, MetaEndQueueStop } = require('./metaEndQueue')
 const { MetaStartQueue, MetaStartQueueAdd, MetaStartQueueProcess, MetaStartQueueStop } = require('./metaStartQueue')
+const { PostStartQueue, PostStartQueueAdd, PostStartQueueProcess, PostStartQueueStop } = require('./postStart.queue')
 
 module.exports = {
   FeedEndQueue,
@@ -23,4 +24,9 @@ module.exports = {
   MetaStartQueueAdd,
   MetaStartQueueProcess,
   MetaStartQueueStop,
+
+  PostStartQueue,
+  PostStartQueueAdd,
+  PostStartQueueProcess,
+  PostStartQueueStop,
 }

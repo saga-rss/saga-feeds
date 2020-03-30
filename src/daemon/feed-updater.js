@@ -11,7 +11,6 @@ const Promise = require('bluebird')
 
 const config = require('../config')
 const appInfo = require('../../package.json')
-const { refreshFeeds, JOB_TYPE_FEED } = require('../helpers/feed')
 const mongoose = require('../services/mongoose')
 const Feed = require('../models/feed')
 const Post = require('../models/post')
@@ -43,7 +42,7 @@ FeedUpdaterDaemon.prototype.updateFeed = function updateFeed(feedId) {
   let processResults = null
 
   return Feed.findById(feedId)
-    .then(feed => FeedHelper.processFeed(feed.feedUrl))
+    .then(feed => FeedHelper.updateFeed(feed.feedUrl))
     .then(results => {
       processResults = results
 
@@ -79,7 +78,7 @@ FeedUpdaterDaemon.prototype.updateFeed = function updateFeed(feedId) {
     .then(() => {
       logger.info(`finished updating feed and its posts`, { feedId })
     })
-    .catch(logger.error)
+    .catch(error => logger.error(error.message, { error }))
 }
 
 FeedUpdaterDaemon.prototype.updateFeeds = function updateFeeds() {
@@ -91,7 +90,7 @@ FeedUpdaterDaemon.prototype.updateFeeds = function updateFeeds() {
 
   logger.info('feeds are updating now')
 
-  return refreshFeeds(this.forcedUpdate, JOB_TYPE_FEED).then(() => {
+  return FeedHelper.scheduleFeedUpdateJobs(this.forcedUpdate, FeedHelper.JOB_TYPE_FEED).then(() => {
     this.isProcessing = false
 
     if (STANDALONE) {
