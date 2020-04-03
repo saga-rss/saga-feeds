@@ -1,6 +1,6 @@
 const { ApolloError } = require('apollo-server-express')
 
-const PostHelper = require('../helpers/post.helper')
+const PostHelper = require('../helpers/post')
 
 const postById = async (source, { id }, context) => {
   let post = await context.models.post.findById(id)

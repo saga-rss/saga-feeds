@@ -14,8 +14,10 @@ const appInfo = require('../../package.json')
 const mongoose = require('../services/mongoose')
 const Feed = require('../models/feed')
 const Post = require('../models/post')
-const FeedHelper = require('../helpers/feed.helper')
+const FeedHelper = require('../helpers/feed')
+const got = require('../helpers/got')
 const {
+  FeedStartQueueAdd,
   FeedEndQueueProcess,
   FeedEndQueueStop,
   FeedStartQueueProcess,
@@ -90,7 +92,7 @@ FeedUpdaterDaemon.prototype.updateFeeds = function updateFeeds() {
 
   logger.info('feeds are updating now')
 
-  return FeedHelper.scheduleFeedUpdateJobs(this.forcedUpdate, FeedHelper.JOB_TYPE_FEED).then(() => {
+  return this.scheduleFeedUpdateJobs(this.forcedUpdate).then(() => {
     this.isProcessing = false
 
     if (STANDALONE) {
@@ -99,6 +101,59 @@ FeedUpdaterDaemon.prototype.updateFeeds = function updateFeeds() {
       logger.info('finished updating feeds')
     }
   })
+}
+
+/**
+ * Load feeds via MongoDB cursor to send to bull queues
+ * for updating
+ * @param {boolean} forceUpdate - should we force the update?
+ * @param {string} jobType - the type of job to schedule
+ * @returns {Promise<unknown>}
+ */
+FeedUpdaterDaemon.prototype.scheduleFeedUpdateJobs = async function scheduleFeedUpdateJobs(forceUpdate = false) {
+  return Feed.find({
+    isPublic: true,
+    scrapeFailureCount: { $lt: 5 },
+  })
+    .sort({ lastScrapedDate: 'asc' })
+    .cursor()
+    .eachAsync(async doc => {
+      if (!doc.feedUrl) return Promise.resolve()
+
+      try {
+        const freshFeed = await got.get(doc.feedUrl)
+
+        const willUpdate = forceUpdate || doc.feedNeedsUpdating(freshFeed.headers)
+
+        if (willUpdate) {
+          await FeedStartQueueAdd(
+            {
+              type: 'Feed',
+              feedId: doc._id,
+              url: doc.feedUrl,
+              shouldUpdate: willUpdate,
+            },
+            { removeOnComplete: true, removeOnFail: true },
+          )
+        }
+
+        return Promise.resolve(doc)
+      } catch (error) {
+        logger.error(`Problem updating feed`, { error, doc })
+
+        await Feed.addScrapeFailure(doc._id)
+
+        if (error.response && error.response.status === 404) {
+          // this feed doesn't exist
+          await Feed.setPublic(doc._id, false)
+        }
+
+        return Promise.resolve()
+      }
+    })
+    .catch(error => {
+      logger.error(`Problem updating feed`, { error })
+    })
 }
 
 FeedUpdaterDaemon.prototype.goToSleep = function goToSleep(fn) {

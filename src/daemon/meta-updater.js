@@ -12,13 +12,15 @@ const config = require('../config')
 const appInfo = require('../../package.json')
 const mongoose = require('../services/mongoose')
 const {
+  MetaStartQueueAdd,
   MetaEndQueueProcess,
   MetaEndQueueStop,
   MetaStartQueueProcess,
   MetaStartQueueStop,
 } = require('../workers/queues')
-const FeedHelper = require('../helpers/feed.helper')
 const logger = require('../helpers/logger').getLogger()
+const got = require('../helpers/got')
+const Feed = require('../models/Feed')
 
 function MetaUpdaterDaemon(forcedUpdate = false) {
   // controls ability to pause processing
@@ -38,9 +40,62 @@ MetaUpdaterDaemon.prototype.updateFeedsMeta = function updateFeed() {
 
   logger.info('meta are updating now')
 
-  FeedHelper.scheduleFeedUpdateJobs(this.forcedUpdate, FeedHelper.JOB_TYPE_META).then(() => {
+  this.scheduleMetaUpdateJobs(this.forcedUpdate).then(() => {
     this.goToSleep(this.updateFeedsMeta)
   })
+}
+
+/**
+ * Load feeds via MongoDB cursor to send to bull queues
+ * for updating
+ * @param {boolean} forceUpdate - should we force the update?
+ * @param {string} jobType - the type of job to schedule
+ * @returns {Promise<unknown>}
+ */
+MetaUpdaterDaemon.prototype.scheduleMetaUpdateJobs = async function scheduleMetaUpdateJobs(forceUpdate = false) {
+  return Feed.find({
+    isPublic: true,
+    scrapeFailureCount: { $lt: 5 },
+  })
+    .sort({ lastScrapedDate: 'asc' })
+    .cursor()
+    .eachAsync(async doc => {
+      if (!doc.feedUrl) return Promise.resolve()
+
+      try {
+        const freshFeed = await got.get(doc.feedUrl)
+
+        const willUpdate = forceUpdate || doc.feedNeedsUpdating(freshFeed.headers)
+
+        if (willUpdate) {
+          await MetaStartQueueAdd(
+            {
+              type: 'Feed',
+              feedId: doc._id,
+              url: doc.feedUrl,
+              shouldUpdate: willUpdate,
+            },
+            { removeOnComplete: true, removeOnFail: true },
+          )
+        }
+
+        return Promise.resolve(doc)
+      } catch (error) {
+        logger.error(`Problem updating meta`, { error, doc })
+
+        await Feed.addScrapeFailure(doc._id)
+
+        if (error.response && error.response.status === 404) {
+          // this feed doesn't exist
+          await Feed.setPublic(doc._id, false)
+        }
+
+        return Promise.resolve()
+      }
+    })
+    .catch(error => {
+      logger.error(`Problem updating meta`, { error })
+    })
 }
 
 MetaUpdaterDaemon.prototype.goToSleep = function goToSleep(fn) {

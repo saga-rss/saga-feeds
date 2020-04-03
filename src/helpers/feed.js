@@ -7,14 +7,10 @@ const crypto = require('crypto')
 
 const got = require('./got')
 const logger = require('./logger').getLogger('helper-feed')
-const PostHelper = require('./post.helper')
-const MetaHelper = require('./meta.helper')
+const PostHelper = require('./post')
+const MetaHelper = require('./meta')
 const Feed = require('../models/feed')
 const Post = require('../models/post')
-const { FeedStartQueueAdd, MetaStartQueueAdd } = require('../workers/queues')
-
-const JOB_TYPE_FEED = 'feed'
-const JOB_TYPE_META = 'meta'
 
 /**
  * Feed helper
@@ -267,104 +263,6 @@ FeedHelper.readFeedStream = async function readFeedStream(stream, feedUrl) {
         }
       })
   })
-}
-
-/**
- * Load feeds via MongoDB cursor to send to bull queues
- * for updating
- * @param {boolean} forceUpdate - should we force the update?
- * @param {string} jobType - the type of job to schedule
- * @returns {Promise<unknown>}
- */
-FeedHelper.scheduleFeedUpdateJobs = async function scheduleFeedUpdateJobs(
-  forceUpdate = false,
-  jobType = JOB_TYPE_FEED,
-) {
-  return Feed.find({
-    isPublic: true,
-    scrapeFailureCount: { $lt: 5 },
-  })
-    .sort({ lastScrapedDate: 'asc' })
-    .cursor()
-    .eachAsync(async doc => {
-      if (!doc.feedUrl) return Promise.resolve()
-
-      try {
-        const freshFeed = await got.get(doc.feedUrl)
-
-        if (jobType === JOB_TYPE_FEED) {
-          await FeedHelper.sendFeedJob(doc, freshFeed, forceUpdate)
-        } else if (jobType === JOB_TYPE_META) {
-          await FeedHelper.sendMetaJob(doc, freshFeed, forceUpdate)
-        }
-
-        return Promise.resolve(doc)
-      } catch (error) {
-        logger.error(`Problem updating feed`, { error, doc })
-
-        await Feed.addScrapeFailure(doc._id)
-
-        if (error.response && error.response.status === 404) {
-          // this feed doesn't exist
-          await Feed.setPublic(doc._id, false)
-        }
-
-        return Promise.resolve()
-      }
-    })
-    .catch(error => {
-      logger.error(`Problem updating feed`, { error })
-    })
-}
-
-/**
- * Schedule a full Feed update
- * @param {object} doc - Feed document from MongoDB
- * @param {object} freshFeed - got response object
- * @param {boolean} forceUpdate - should we force an update?
- * @returns {Promise<*>}
- */
-FeedHelper.sendFeedJob = async function scheduleFeedJob(doc, freshFeed, forceUpdate) {
-  const willUpdate = forceUpdate || doc.feedNeedsUpdating(freshFeed.headers)
-
-  if (willUpdate) {
-    await FeedStartQueueAdd(
-      {
-        type: 'Feed',
-        feedId: doc._id,
-        url: doc.feedUrl,
-        shouldUpdate: willUpdate,
-      },
-      { removeOnComplete: true, removeOnFail: true },
-    )
-  } else {
-    return Promise.resolve(doc)
-  }
-}
-
-/**
- * Schedule a metadata updater job for a Feed
- * @param {object} doc - Feed document from MongoDB
- * @param {object} freshFeed - got response object
- * @param {boolean} forceUpdate - should we force an update?
- * @returns {Promise<*>}
- */
-FeedHelper.sendMetaJob = async function scheduleMetaJob(doc, freshFeed, forceUpdate) {
-  const willUpdate = forceUpdate || doc.feedNeedsUpdating(freshFeed.headers)
-
-  if (willUpdate) {
-    await MetaStartQueueAdd(
-      {
-        type: 'Meta',
-        feedId: doc._id,
-        url: doc.url,
-        shouldUpdate: willUpdate,
-      },
-      { removeOnComplete: true, removeOnFail: true },
-    )
-  } else {
-    return Promise.resolve(doc)
-  }
 }
 
 module.exports = FeedHelper

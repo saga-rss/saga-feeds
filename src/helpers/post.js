@@ -8,7 +8,7 @@ const crypto = require('crypto')
 const logger = require('./logger').getLogger()
 const config = require('../config')
 const Post = require('../models/post')
-const MetaHelper = require('./meta.helper')
+const MetaHelper = require('./meta')
 
 /**
  * Post helpers

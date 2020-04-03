@@ -3,7 +3,7 @@ const Promise = require('bluebird')
 const { ApolloError } = require('apollo-server-express')
 
 const { discoverFeeds } = require('../helpers/discovery')
-const FeedHelper = require('../helpers/feed.helper')
+const FeedHelper = require('../helpers/feed')
 const logger = require('../helpers/logger').getLogger()
 
 const feedById = async (source, { id }, context) => {
