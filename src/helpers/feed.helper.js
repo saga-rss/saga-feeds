@@ -16,6 +16,10 @@ const { FeedStartQueueAdd, MetaStartQueueAdd } = require('../workers/queues')
 const JOB_TYPE_FEED = 'feed'
 const JOB_TYPE_META = 'meta'
 
+/**
+ * Feed helper
+ * @module feed.helper
+ */
 const FeedHelper = {}
 
 /**
@@ -103,13 +107,17 @@ FeedHelper.mergeMetas = function mergeMetas(rssMeta, htmlMeta) {
   const merged = Object.assign({}, rssMeta)
 
   if (!merged.images) merged.images = {}
-  if (htmlMeta.url && !merged.url) merged.url = htmlMeta.url
-  if (htmlMeta.description && !merged.summary) merged.summary = htmlMeta.description
-  if (htmlMeta.image && !merged.images.featured) merged.images.featured = htmlMeta.image
-  if (htmlMeta.logo && !merged.images.logo) merged.images.logo = htmlMeta.logo
-  if (htmlMeta.publisher && !merged.publisher) merged.publisher = htmlMeta.publisher
+
+  merged.canonicalUrl = htmlMeta.canonicalUrl
+  merged.publisher = htmlMeta.publisher
+  merged.summary = htmlMeta.description
+  merged.themeColor = htmlMeta.themeColor
+  merged.images.featured = htmlMeta.image
+  merged.images.logo = htmlMeta.logo
+  merged.images.favicon = htmlMeta.favicon
+  merged.publisher = htmlMeta.site_name
+
   if (htmlMeta.lang && !merged.language) merged.language = htmlMeta.lang
-  if (htmlMeta.author && !merged.author) merged.author = htmlMeta.author
 
   logger.debug(`merged final meta for page`, merged)
 
@@ -175,6 +183,11 @@ FeedHelper.createFeedIdentifier = function createFeedIdentifier(feedUrl, posts) 
     .digest('hex')
 }
 
+/**
+ * Create a read stream for a feed url
+ * @param {string} feedUrl - feed url
+ * @returns {Promise<null|*>} - processing promise resulting in stream
+ */
 FeedHelper.createFeedStream = async function createFeedStream(feedUrl) {
   try {
     return got.stream(feedUrl, { retries: 0 })
@@ -187,6 +200,13 @@ FeedHelper.createFeedStream = async function createFeedStream(feedUrl) {
   }
 }
 
+/**
+ * Read a feed's read stream and pull out
+ * the relevant meta data and posts
+ * @param {object} stream - a read stream (see FeedHelper.createFeedStream)
+ * @param {string} feedUrl - feed url
+ * @returns {Promise} - processing promise
+ */
 FeedHelper.readFeedStream = async function readFeedStream(stream, feedUrl) {
   let feedType = ''
   const feed = {
@@ -227,7 +247,7 @@ FeedHelper.readFeedStream = async function readFeedStream(stream, feedUrl) {
         feed.meta = {
           url: this.meta.link ? normalizeUrl(this.meta.link) : '',
           language: this.meta.language,
-          image: {
+          images: {
             featured: this.meta.image && this.meta.image.url ? this.meta.image.url : '',
             favicon: this.meta.favicon || '',
           },

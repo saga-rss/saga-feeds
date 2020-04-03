@@ -108,6 +108,7 @@ const typeDefs = gql`
   }
 
   type PostImage {
+    favicon: String
     featured: String
     logo: String
   }
@@ -128,10 +129,12 @@ const typeDefs = gql`
     identifier: String!
     interests: [String]
     isPublic: Boolean
+    language: String
     postType: FeedType
     postUpdatedDate: DateTime
     publishedDate: DateTime
     summary: String
+    themeColor: String
     title: String
     updatedAt: DateTime
     url: String

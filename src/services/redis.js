@@ -34,6 +34,7 @@ publisher.on('error', function(error) {
 
 // options for bull queues
 const bullOptions = {
+  prefix: config.appName,
   createClient: function(type) {
     switch (type) {
       case 'client':

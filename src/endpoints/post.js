@@ -28,7 +28,7 @@ const postContent = async ({ id, url, content }) => {
     if (forceUpdate) {
       const parsed = await PostHelper.getContent(url)
       const updated = await PostHelper.updateContent(id, parsed)
-      freshContent = updated.content
+      freshContent = updated.content || ''
     }
   }
 

@@ -270,17 +270,16 @@ PostHelper.updateMeta = async function updateMeta(id, meta) {
   }
 
   const updates = {
-    summary: meta.description,
-  }
-
-  if (meta.image) {
-    updates.images = {
+    author: meta.author,
+    canonicalUrl: meta.canonicalUrl,
+    images: {
       featured: meta.image,
-    }
-  }
-
-  if (meta.author) {
-    updates.author = meta.author
+      favicon: meta.favicon,
+      logo: meta.logo,
+    },
+    language: meta.language,
+    summary: meta.description,
+    themeColor: meta.themeColor,
   }
 
   await Post.findOneAndUpdate({ _id: id }, updates, { new: true })
@@ -347,7 +346,7 @@ PostHelper.updateContent = async function updateContent(id, parsed) {
  * @param {string=} html - The HTML of the original post
  * @returns {Promise<T>} - processing promise
  */
-PostHelper.getContent = function getContent(url, html = '') {
+PostHelper.getContent = function getContent(url) {
   if (!url) {
     return Promise.resolve('')
   }
@@ -356,10 +355,6 @@ PostHelper.getContent = function getContent(url, html = '') {
     headers: {
       'user-agent': config.userAgent,
     },
-  }
-
-  if (html && html.length > 0) {
-    mercuryOptions.html = html
   }
 
   return Mercury.parse(url, mercuryOptions)

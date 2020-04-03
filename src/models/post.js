@@ -103,6 +103,11 @@ const schema = new Schema(
         trim: true,
         default: '',
       },
+      favicon: {
+        type: String,
+        trim: true,
+        default: '',
+      },
       logo: {
         type: String,
         trim: true,
@@ -123,6 +128,10 @@ const schema = new Schema(
       // is the post publicly available on the internet
       type: Boolean,
       default: true,
+    },
+    language: {
+      type: String,
+      default: '',
     },
     postStaleDate: {
       type: Date,
