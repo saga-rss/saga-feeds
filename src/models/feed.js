@@ -59,11 +59,6 @@ const schema = new Schema(
         trim: true,
         default: '',
       },
-      openGraph: {
-        type: String,
-        trim: true,
-        default: '',
-      },
       favicon: {
         type: String,
         trim: true,
@@ -135,6 +130,10 @@ const schema = new Schema(
       type: String,
       default: '',
     },
+    themeColor: {
+      type: String,
+      default: '',
+    },
     title: {
       type: String,
       trim: true,
@@ -198,13 +197,14 @@ schema.statics.updateFeedMeta = async function updateFeedMeta(feedId, meta) {
   const updatedFeed = await this.findOneAndUpdate(
     { _id: feedId },
     {
-      summary: meta.description,
       images: {
         logo: meta.logo,
-        openGraph: meta.image,
+        featured: meta.image,
       },
-      publisher: meta.publisher,
       metaStaleDate: formatISO(addHours(new Date(), 1)),
+      publisher: meta.publisher,
+      summary: meta.description,
+      themeColor: meta.themeColor,
     },
     {
       new: true,

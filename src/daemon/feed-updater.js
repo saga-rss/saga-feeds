@@ -44,7 +44,7 @@ FeedUpdaterDaemon.prototype.updateFeed = function updateFeed(feedId) {
   let processResults = null
 
   return Feed.findById(feedId)
-    .then(feed => FeedHelper.updateFeed(feed.feedUrl))
+    .then(feed => FeedHelper.fetchFeed(feed.feedUrl))
     .then(results => {
       processResults = results
 

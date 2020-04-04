@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 const { FeedEndQueueAdd } = require('../queues/feedEndQueue')
-const { updateFeed } = require('../../helpers/feed')
+const FeedHelper = require('../../helpers/feed')
 const logger = require('../../helpers/logger').getLogger()
 
 module.exports = async (job, done) => {
@@ -23,7 +23,7 @@ module.exports = async (job, done) => {
   })
 
   try {
-    const results = await updateFeed(data.url)
+    const results = await FeedHelper.fetchFeed(data.url)
 
     await FeedEndQueueAdd({
       type: 'Feed',

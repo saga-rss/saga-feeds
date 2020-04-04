@@ -3,7 +3,7 @@ const appInfo = require('../package.json')
 module.exports = {
   appName: appInfo.name,
   env: process.env.NODE_ENV,
-  feedRefreshInterval: 60 * 15 * 1000, // once per 15 minutes
+  feedRefreshInterval: 60 * 60 * 1000, // once per hour
   jwt: {
     secret: process.env.SAGA_JWT_SECRET,
     issuer: process.env.SAGA_JWT_ISSUER,
@@ -19,5 +19,5 @@ module.exports = {
   server: {
     port: process.env.SAGA_SERVER_PORT,
   },
-  userAgent: `${appInfo.name}/${appInfo.version} ${appInfo.author} ${appInfo.homepage}`,
+  userAgent: `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36`,
 }

@@ -33,7 +33,7 @@ function MetaUpdaterDaemon(forcedUpdate = false) {
   this.forcedUpdate = forcedUpdate
 }
 
-MetaUpdaterDaemon.prototype.updateFeedsMeta = function updateFeed() {
+MetaUpdaterDaemon.prototype.updateFeedsMeta = function updateFeedsMeta() {
   if (this.isPaused) {
     return false
   }

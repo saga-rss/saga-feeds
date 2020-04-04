@@ -65,7 +65,6 @@ const typeDefs = gql`
 
   type FeedImage {
     featured: String
-    openGraph: String
     favicon: String
     logo: String
   }
@@ -84,12 +83,13 @@ const typeDefs = gql`
     isFeatured: Boolean
     isPublic: Boolean
     language: String
-    posts: [Post]
+    posts(limit: Int, skip: Int): [Post]
     postCount: Int
     publishedDate: DateTime
     publisher: String
     subscriptionCount: Int
     summary: String
+    themeColor: String
     title: String
     updatedDate: DateTime
     url: String
@@ -134,7 +134,6 @@ const typeDefs = gql`
     postUpdatedDate: DateTime
     publishedDate: DateTime
     summary: String
-    themeColor: String
     title: String
     updatedAt: DateTime
     url: String

@@ -28,11 +28,13 @@ const schema = new Schema(
       unique: true,
       required: true,
     },
-    interests: {
-      type: [String],
-      index: true,
-      default: [],
-    },
+    interests: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Interest',
+        index: true,
+      },
+    ],
     isActive: {
       type: Boolean,
       default: true,

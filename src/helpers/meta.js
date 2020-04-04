@@ -1,5 +1,5 @@
 const { JSDOM } = require('jsdom')
-const url = require('url')
+const { URL } = require('url')
 
 const config = require('../config')
 const got = require('./got')
@@ -10,6 +10,21 @@ const logger = require('./logger').getLogger('helper-meta')
  * @module meta.helper
  */
 const MetaHelper = {}
+
+MetaHelper.isAbsoluteUrl = function isAbsoluteUrl(url) {
+  if (typeof url !== 'string') {
+    throw new TypeError(`Expected a \`string\`, got \`${typeof url}\``)
+  }
+
+  // Don't match Windows paths `c:\`
+  if (/^[a-zA-Z]:\\/.test(url)) {
+    return false
+  }
+
+  // Scheme: https://tools.ietf.org/html/rfc3986#section-3.1
+  // Absolute URL: https://tools.ietf.org/html/rfc3986#section-4.3
+  return /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(url)
+}
 
 /**
  * Extract Open Graph properties from the document head.
@@ -74,14 +89,14 @@ MetaHelper.getMeta = async function getMeta(targetUrl) {
     url: targetUrl,
   })
 
-  const baseUrl = url.parse(targetUrl).hostname
+  const url = new URL(targetUrl)
 
   results = {
     author: '',
     canonicalUrl: '',
     description: '',
     favicon: '',
-    logo: `https://logo.clearbit.com/${baseUrl}`,
+    logo: `https://logo.clearbit.com/${url.hostname}`,
     image: '',
     language: '',
     publisher: '',
@@ -109,6 +124,14 @@ MetaHelper.getMeta = async function getMeta(targetUrl) {
     const htmlMetas = MetaHelper.extractHtmlMetas(dom.window.document)
 
     results = Object.assign({}, results, openGraph, htmlMetas)
+
+    if (results.image.length && !MetaHelper.isAbsoluteUrl(results.image)) {
+      results.image = url.origin + results.image
+    }
+
+    if (results.favicon.length && !MetaHelper.isAbsoluteUrl(results.favicon)) {
+      results.favicon = url.origin + results.favicon
+    }
 
     logger.debug(`Processed meta for url`, {
       url: targetUrl,

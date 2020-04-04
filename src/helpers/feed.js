@@ -26,7 +26,7 @@ const FeedHelper = {}
  * @returns {Promise<*>} - processing promise
  */
 FeedHelper.createFeed = async function createFeed(feedUrl, partialDocument) {
-  const { meta, posts } = await FeedHelper.updateFeed(feedUrl)
+  const { meta, posts } = await FeedHelper.fetchFeed(feedUrl)
 
   const initial = Object.assign({}, meta, partialDocument)
 
@@ -70,7 +70,7 @@ FeedHelper.createFeed = async function createFeed(feedUrl, partialDocument) {
  * @param feedUrl
  * @returns {Promise<{meta: {} & Object, posts: *}|null>}
  */
-FeedHelper.updateFeed = async function updateFeed(feedUrl) {
+FeedHelper.fetchFeed = async function fetchFeed(feedUrl) {
   const stream = await FeedHelper.createFeedStream(feedUrl)
 
   if (!stream) {
@@ -89,7 +89,7 @@ FeedHelper.updateFeed = async function updateFeed(feedUrl) {
 
   return {
     meta: FeedHelper.mergeMetas(meta, feedHostMeta),
-    posts: normalizedPosts,
+    posts: normalizedPosts.filter(p => p),
   }
 }
 
@@ -101,6 +101,10 @@ FeedHelper.updateFeed = async function updateFeed(feedUrl) {
  */
 FeedHelper.mergeMetas = function mergeMetas(rssMeta, htmlMeta) {
   const merged = Object.assign({}, rssMeta)
+
+  if (!htmlMeta || !Object.keys(htmlMeta).length) {
+    return null
+  }
 
   if (!merged.images) merged.images = {}
 

@@ -23,6 +23,15 @@ const PostHelper = {}
  * @returns {object} - a processed & normalized post
  */
 PostHelper.normalizePost = async function normalizePost(post) {
+  // see if this post exists, if possible
+  if (post.guid) {
+    const found = await Post.findOne({ guid: post.guid })
+
+    // if the post is found, it's in the system already,
+    // and we don't need to try creating it right now.
+    if (found) return false
+  }
+
   const postMeta = await MetaHelper.getMeta(post.link)
 
   const processed = {
@@ -279,7 +288,6 @@ PostHelper.updateMeta = async function updateMeta(id, meta) {
     },
     language: meta.language,
     summary: meta.description,
-    themeColor: meta.themeColor,
   }
 
   await Post.findOneAndUpdate({ _id: id }, updates, { new: true })

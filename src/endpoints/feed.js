@@ -66,7 +66,7 @@ const feedInterests = async (source, args, context) => {
 
 const feedPosts = async (source, { limit = 10, skip = 0 }, context) => {
   if (source instanceof context.models.feed) {
-    const posts = await context.models.post.find({ feed: source.id }, null, { skip, limit })
+    const posts = await context.models.post.find({ feed: source.id }, null, { skip, limit }).sort({ createdAt: 'desc' })
     return posts
   }
   return null
