@@ -5,8 +5,9 @@ module.exports = {
   env: process.env.NODE_ENV,
   feedRefreshInterval: 60 * 60 * 1000, // once per hour
   jwt: {
-    secret: process.env.SAGA_JWT_SECRET,
+    expiresIn: '24h',
     issuer: process.env.SAGA_JWT_ISSUER,
+    secret: process.env.SAGA_JWT_SECRET,
   },
   logLevel: process.env.SAGA_LOG_LEVEL || 'error',
   metaRefreshInterval: 24 * 60 * 60 * 1000, // once per day

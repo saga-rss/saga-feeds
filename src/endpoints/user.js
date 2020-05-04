@@ -1,5 +1,6 @@
+const Promise = require('bluebird')
 const validator = require('validator')
-const { UserInputError, ApolloError } = require('apollo-server-express')
+const { UserInputError, ApolloError, AuthenticationError } = require('apollo-server-express')
 
 const validateEmail = email => {
   if (!email || !validator.isEmail(email)) {
@@ -29,13 +30,14 @@ const userById = async (source, { id }, context) => {
   return user
 }
 
-const userCreate = async (source, { displayName, email, password, username }, context) => {
+const userCreateOrUpdate = async (source, { displayName, email, interests, password, username }, context) => {
   const newUser = {
-    displayName: displayName,
-    username: username.trim(),
+    displayName: displayName.trim(),
     email: email.trim(),
+    interests,
     normalizedEmail: validator.normalizeEmail(email.trim()),
     password,
+    username: username.trim(),
   }
 
   // validate provided email address
@@ -48,14 +50,21 @@ const userCreate = async (source, { displayName, email, password, username }, co
     $or: [{ normalizedEmail: newUser.normalizedEmail }, { username: newUser.username }],
   })
 
-  if (exists) {
-    throw new UserInputError('already exists', {
-      email: newUser.normalizedEmail === exists.normalizedEmail,
-      username: newUser.username === exists.username,
-    })
-  }
+  let user
 
-  const user = await context.models.user.create(newUser)
+  if (exists) {
+    if (context.user && context.user.sub === exists.id) {
+      await context.models.user.update({ _id: exists.id }, newUser)
+      user = await context.models.user.findById(exists.id)
+    } else {
+      throw new UserInputError('already exists', {
+        email: newUser.normalizedEmail === exists.normalizedEmail,
+        username: newUser.username === exists.username,
+      })
+    }
+  } else {
+    user = await context.models.user.create(newUser)
+  }
 
   return user
 }
@@ -73,7 +82,16 @@ const userSearch = async (source, { id }, context) => {
   return users
 }
 
+const userInterests = async (source, args, context) => {
+  if (source instanceof context.models.user) {
+    return source.getInterests()
+  }
+  return []
+}
+
 const userToken = async (source, args, context) => {
+  if (source.token) return source.token
+
   if (source instanceof context.models.user && (!context.user || (context.user && context.user.sub === source.id))) {
     return source.getToken()
   }
@@ -92,12 +110,24 @@ const userLogin = async (source, { email, password }, context) => {
     throw new UserInputError('invalid password')
   }
 
-  return user
+  const token = user.getToken()
+
+  return { ...user._doc, token }
+}
+
+const userLatestInterests = async (source, params, context) => {
+  const user = await context.models.user.findById(context.user.sub)
+
+  console.log(user)
+
+  return []
 }
 
 module.exports = {
   userById,
-  userCreate,
+  userCreateOrUpdate,
+  userInterests,
+  userLatestInterests,
   userLogin,
   userSearch,
   userToken,

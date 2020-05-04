@@ -35,8 +35,8 @@ schema.statics.createInterest = async function createInterest(name, parent = nul
   return created
 }
 
-schema.statics.getAllInterests = async function getAllInterests() {
-  const interests = await this.find({ parent: null })
+schema.statics.getAllInterests = async function getAllInterests(interests = []) {
+  interests = interests.length ? interests : await this.find({ parent: null })
 
   const mapped = []
 

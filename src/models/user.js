@@ -95,9 +95,23 @@ schema.methods.getToken = function getToken() {
     config.jwt.secret,
     {
       issuer: config.jwt.issuer,
-      expiresIn: '1h',
+      expiresIn: config.jwt.expiresIn,
     },
   )
+}
+
+schema.methods.getInterests = async function getInterests() {
+  if (!this.interests || !this.interests.length) return []
+
+  const userInterests = await mongoose.models.Interest.find({
+    _id: { $in: this.interests },
+  })
+
+  const parents = userInterests.map(i => {
+    if (i.level === 1) return i
+  })
+
+  return mongoose.models.Interest.getAllInterests(parents)
 }
 
 module.exports = mongoose.models.User || mongoose.model('User', schema)

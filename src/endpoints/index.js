@@ -5,7 +5,15 @@ const { GraphQLDateTime, GraphQLDate } = require('graphql-iso-date')
 const { feedById, feedCreate, feedInterests, feedPosts, feedSearch, feedSubscribe, feedUnsubscribe } = require('./feed')
 const { interestCreate, interestSearch, interestUpdate } = require('./interest')
 const { postById, postContent, postFeed } = require('./post')
-const { userById, userCreate, userLogin, userSearch, userToken } = require('./user')
+const {
+  userById,
+  userCreateOrUpdate,
+  userInterests,
+  userLatestInterests,
+  userLogin,
+  userSearch,
+  userToken,
+} = require('./user')
 
 const typeDefs = gql`
   scalar MongoID
@@ -38,21 +46,28 @@ const typeDefs = gql`
 
   type Query {
     feedById(id: MongoID!): Feed
-    feedSearch(sort: Sort, sortDirection: SortDirection): [Feed]
-    interestSearch: [Interest]
+    feedSearch(sort: Sort, sortDirection: SortDirection): [Feed!]!
+    interestSearch: [Interest!]!
     postById(id: MongoID!): Post
     userById(id: MongoID!): User
+    userLatestInterests: [LatestUserInterest!]!
     userLogin(email: String!, password: String): User
-    userSearch(sort: Sort): [User]
+    userSearch(sort: Sort): [User!]!
   }
 
   type Mutation {
-    feedCreate(feedUrl: String!, interests: [MongoID]): [Feed]
+    feedCreate(feedUrl: String!, interests: [MongoID!]!): [Feed!]!
     feedSubscribe(feedId: MongoID!): Feed
     feedUnsubscribe(feedId: MongoID!): Feed
     interestCreate(name: String!, parent: MongoID): Interest
     interestUpdate(name: String, parent: MongoID, id: MongoID!): Interest
-    userCreate(displayName: String!, email: String!, password: String!, username: String!): User
+    userCreateOrUpdate(
+      displayName: String!
+      email: String!
+      interests: [MongoID!]!
+      password: String!
+      username: String!
+    ): User
     userUpdate: User
   }
 
@@ -145,12 +160,17 @@ const typeDefs = gql`
     displayName: String
     email: String
     id: MongoID!
-    interests: [String]
+    interests: [Interest!]!
     isActive: Boolean
     isAdmin: Boolean
     username: String
     url: String
     token: String
+  }
+
+  type LatestUserInterest {
+    interest: Interest!
+    posts: [Post!]!
   }
 `
 
@@ -164,6 +184,7 @@ const resolvers = {
     interestSearch,
     postById,
     userById,
+    userLatestInterests,
     userLogin,
     userSearch,
   },
@@ -173,8 +194,7 @@ const resolvers = {
     feedUnsubscribe,
     interestCreate,
     interestUpdate,
-    userCreate,
-    userUpdate: () => {},
+    userCreateOrUpdate,
   },
   Feed: {
     interests: feedInterests,
@@ -185,6 +205,7 @@ const resolvers = {
     feed: postFeed,
   },
   User: {
+    interests: userInterests,
     token: userToken,
   },
 }

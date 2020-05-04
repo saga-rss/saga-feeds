@@ -70,7 +70,7 @@ FeedHelper.createFeed = async function createFeed(feedUrl, partialDocument) {
  * @param feedUrl
  * @returns {Promise<{meta: {} & Object, posts: *}|null>}
  */
-FeedHelper.fetchFeed = async function fetchFeed(feedUrl) {
+FeedHelper.fetchFeed = async function fetchFeed(feedUrl, feedHostUrl = '') {
   const stream = await FeedHelper.createFeedStream(feedUrl)
 
   if (!stream) {
@@ -85,7 +85,7 @@ FeedHelper.fetchFeed = async function fetchFeed(feedUrl) {
 
   meta.identifier = FeedHelper.createFeedIdentifier(feedUrl, normalizedPosts)
 
-  const feedHostMeta = await MetaHelper.getMeta(meta.url)
+  const feedHostMeta = await MetaHelper.getMeta(feedHostUrl.length ? feedHostUrl : meta.url)
 
   return {
     meta: FeedHelper.mergeMetas(meta, feedHostMeta),
