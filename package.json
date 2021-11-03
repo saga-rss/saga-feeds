@@ -58,7 +58,7 @@
     "sanitize-html": "^1.21.1",
     "strip": "^3.0.0",
     "uuid": "^3.4.0",
-    "validator": "^12.2.0"
+    "validator": "^13.7.0"
   },
   "devDependencies": {
     "husky": "^4.2.3",
