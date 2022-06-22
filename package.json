@@ -24,7 +24,7 @@
     "express": "^4.17.1",
     "express-jwt": "^5.3.1",
     "feedparser": "^2.2.9",
-    "got": "^10.4.0",
+    "got": "^11.8.5",
     "graphql": "^14.6.0",
     "graphql-iso-date": "^3.6.1",
     "graphql-scalar-objectid": "^0.1.2",
